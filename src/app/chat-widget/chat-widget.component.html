@@ -10,7 +10,7 @@
     <button class="lexi-close" (click)="toggle()" aria-label="Close">✕</button>
   </header>
 
-  <section class="lexi-body" role="log" aria-live="polite">
+  <section class="lexi-body" role="log" aria-live="polite" #log>
     <div
       *ngFor="let m of messages(); let i = index"
       class="lexi-msg"
@@ -27,11 +27,12 @@
 
   <footer class="lexi-input">
     <textarea
+      #input
       [placeholder]="sending() ? 'Thinking…' : 'Type a message…'"
       [disabled]="sending()"
       (keydown)="keydown($event)"
-      [ngModel]="input()"
-      (ngModelChange)="input.set($event)"
+      [ngModel]="text()"
+      (ngModelChange)="text.set($event)"
     >
     </textarea>
 

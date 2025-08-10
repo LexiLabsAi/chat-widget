@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
   HostBinding,
   ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,9 +36,13 @@ export class ChatWidgetComponent {
 
   @ViewChild(LoadingAnimationComponent) loader?: LoadingAnimationComponent;
 
+  @ViewChild('log') log?: ElementRef<HTMLElement>;
+  @ViewChild('input') inputEl?: ElementRef<HTMLTextAreaElement>;
+
   open = signal(false);
   sending = signal(false);
-  input = signal('');
+  // renamed from `input` to avoid clashes with the template ref
+  text = signal('');
 
   messages = signal<ChatMessage[]>([
     { role: 'assistant', text: 'Hi! Ask me anything about our services.' },
@@ -47,6 +52,25 @@ export class ChatWidgetComponent {
     effect(() => {
       this.chat.configure({ apiUrl: this.apiUrl, companyId: this.companyId });
     });
+
+    effect(() => {
+      // react to changes and keep the log scrolled
+      this.open();
+      this.messages();
+      setTimeout(() => this.scrollToBottom());
+    });
+  }
+
+  private scrollToBottom() {
+    const el = this.log?.nativeElement;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  private focusInput() {
+    const el = this.inputEl?.nativeElement;
+    el?.focus();
   }
 
   toggle() {
@@ -58,22 +82,28 @@ export class ChatWidgetComponent {
       if (!this.chat.hasLoadedContext()) {
         this.chat.loadContext().catch(() => {});
       }
+      setTimeout(() => {
+        this.scrollToBottom();
+        this.focusInput();
+      });
     } else {
       this.loader?.backToIdle();
     }
   }
 
   async send() {
-    const text = this.input().trim();
-    if (!text) return;
+    const value = this.text().trim();
+    if (!value) return;
 
-    this.messages.update((m) => [...m, { role: 'user', text }]);
-    this.input.set('');
+    this.messages.update((m) => [...m, { role: 'user', text: value }]);
+    this.text.set('');
     this.sending.set(true);
+    this.scrollToBottom();
 
     try {
-      const reply = await this.chat.ask(text);
+      const reply = await this.chat.ask(value);
       this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
+      this.scrollToBottom();
     } catch {
       this.messages.update((m) => [
         ...m,
@@ -84,6 +114,7 @@ export class ChatWidgetComponent {
       ]);
     } finally {
       this.sending.set(false);
+      setTimeout(() => this.focusInput());
     }
   }
 
