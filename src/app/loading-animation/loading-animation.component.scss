@@ -1,0 +1,12 @@
+:host {
+  display: inline-grid;
+  place-items: center;
+  pointer-events: none;
+}
+.wrap {
+  width: 100%;
+  height: 100%;
+}
+canvas {
+  display: block;
+}

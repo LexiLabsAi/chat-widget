@@ -1,0 +1,307 @@
+// --- Theme tokens (kept minimal)
+$dark-bg: #0b1020;
+$dark-surface: #121a33;
+$dark-text: #e7efff;
+$dark-muted: #9fb2d3;
+$dark-accent: #6d7cff;
+$dark-border: rgba(255, 255, 255, 0.12);
+$dark-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 24px rgba(109, 124, 255, 0.2);
+
+$light-bg: #ffffff;
+$light-surface: #ffffff;
+$light-text: #111827;
+$light-muted: #6b7280;
+$light-border: rgba(0, 0, 0, 0.12);
+$light-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+
+:host {
+  all: initial;
+  contain: content; // Shadow DOM hygiene
+
+  // Default (dark)
+  --lexi-bg: #{$dark-bg};
+  --lexi-surface: #{$dark-surface};
+  --lexi-text: #{$dark-text};
+  --lexi-muted: #{$dark-muted};
+  --lexi-accent: #{$dark-accent};
+  --lexi-border: #{$dark-border};
+  --lexi-shadow: #{$dark-shadow};
+
+  // Light override
+  &[data-theme="light"] {
+    --lexi-bg: #{$light-bg};
+    --lexi-surface: #{$light-surface};
+    --lexi-text: #{$light-text};
+    --lexi-muted: #{$light-muted};
+    --lexi-border: #{$light-border};
+    --lexi-shadow: #{$light-shadow};
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    font: inherit;
+  }
+
+  /* ---------- Launcher (floating button) ---------- */
+  .lexi-launcher {
+    all: unset;
+    cursor: pointer;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    left: auto;
+    z-index: 2147483647;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(
+      80% 80% at 30% 30%,
+      var(--lexi-accent),
+      #3b3eff 80%
+    );
+    color: white;
+    display: flex; /* changed to flex */
+    align-items: center; /* vertical center */
+    justify-content: center; /* horizontal center */
+    box-shadow: var(--lexi-shadow);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+
+    jhi-loading-animation {
+      width: 100px; /* match canvasSize */
+      height: 100px;
+    }
+
+    // jhi-loading-animation svg {
+    //   animation: loopMotion 0.8s cubic-bezier(0.65, 0, 0.35, 1) 1 forwards;
+    // }
+
+    // @keyframes loopMotion {
+    //   0% {
+    //     transform: scale(1) rotate(0deg);
+    //   }
+    //   25% {
+    //     transform: scale(1.05) rotate(90deg);
+    //   }
+    //   50% {
+    //     transform: scale(1) rotate(180deg);
+    //   }
+    //   75% {
+    //     transform: scale(1.05) rotate(270deg);
+    //   }
+    //   100% {
+    //     transform: scale(1) rotate(360deg);
+    //   }
+    // }
+
+    /* Optional: tiny one-shot pop on the loader element itself */
+    // jhi-loading-animation {
+    //   &.pop {
+    //     animation: popOnce 0.8s cubic-bezier(0.65, 0, 0.35, 1) 1 forwards;
+    //   }
+    // }
+
+    // @keyframes popOnce {
+    //   0% {
+    //     transform: scale(1);
+    //   }
+    //   50% {
+    //     transform: scale(1.08);
+    //   }
+    //   100% {
+    //     transform: scale(1);
+    //   }
+    // }
+  }
+
+  // Flip side when host asks for left positioning
+  &[data-position="left"] .lexi-launcher {
+    left: 24px;
+    right: auto;
+  }
+
+  /* ---------- Window ---------- */
+  .lexi-window {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    left: auto;
+    z-index: 2147483646;
+    width: 360px;
+    max-height: min(70vh, 640px);
+    border-radius: 16px;
+    background: var(--lexi-surface);
+    color: var(--lexi-text);
+    box-shadow: var(--lexi-shadow);
+    border: 1px solid var(--lexi-border);
+    overflow: hidden;
+    transform: translateY(16px) scale(0.98);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+
+    &.open {
+      transform: none;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lexi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--lexi-border);
+      background: linear-gradient(
+        180deg,
+        rgba(109, 124, 255, 0.12),
+        transparent
+      );
+
+      .lexi-logo {
+        width: 20px;
+        height: 20px;
+        display: grid;
+        place-items: center;
+      }
+
+      .lexi-title {
+        font-weight: 600;
+      }
+
+      .lexi-close {
+        margin-left: auto;
+        all: unset;
+        cursor: pointer;
+        color: var(--lexi-muted);
+        padding: 6px;
+        border-radius: 6px;
+
+        &:hover {
+          background: rgba(127, 127, 255, 0.08);
+        }
+      }
+    }
+
+    .lexi-body {
+      padding: 12px;
+      overflow: auto;
+      max-height: calc(70vh - 170px);
+      display: grid;
+      gap: 10px;
+
+      .lexi-msg {
+        display: flex;
+
+        &.user {
+          justify-content: flex-end;
+
+          .lexi-bubble {
+            background: rgba(109, 124, 255, 0.18);
+            border-color: rgba(109, 124, 255, 0.4);
+          }
+        }
+
+        .lexi-bubble {
+          max-width: 80%;
+          padding: 10px 12px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--lexi-border);
+        }
+      }
+
+      .lexi-typing .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 4px;
+        background: var(--lexi-muted);
+        animation: bounce 1s infinite ease-in-out;
+
+        &:nth-child(2) {
+          animation-delay: 0.12s;
+        }
+        &:nth-child(3) {
+          animation-delay: 0.24s;
+        }
+      }
+    }
+
+    .lexi-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--lexi-border);
+      background: var(--lexi-bg);
+
+      textarea {
+        resize: none;
+        height: 44px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--lexi-border);
+        background: transparent;
+        color: var(--lexi-text);
+      }
+
+      .lexi-send {
+        all: unset;
+        cursor: pointer;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: var(--lexi-accent);
+        color: white;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // Left-positioned window
+  &[data-position="left"] .lexi-window {
+    left: 24px;
+    right: auto;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 420px) {
+    .lexi-window {
+      width: calc(100vw - 32px);
+      right: 16px;
+      bottom: 84px;
+    }
+    &[data-position="left"] .lexi-window {
+      left: 16px;
+    }
+    .lexi-launcher {
+      right: 16px;
+      bottom: 16px;
+    }
+    &[data-position="left"] .lexi-launcher {
+      left: 16px;
+    }
+  }
+}
+
+/* ---------- Animations ---------- */
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+}
