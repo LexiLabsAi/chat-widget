@@ -434,13 +434,13 @@ $lexi-muted: #64748b; // slate-500
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 10px 0;
+  margin: 5px 0;
 }
 
 .lexi-chip {
-  background: rgba(255, 255, 255, 0.85);
+  background: transparent;
   color: #111;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(0, 0, 0, 0.4);
   border-radius: 20px;
   padding: 6px 12px;
   font-size: 13px;
