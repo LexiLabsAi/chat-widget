@@ -407,29 +407,6 @@ $lexi-muted: #64748b; // slate-500
   }
 }
 
-/* ---------- Optional dark mode ---------- */
-@media (prefers-color-scheme: dark) {
-  .lexi-body {
-    background: radial-gradient(
-        1200px 600px at 50% 0%,
-        rgba(255, 255, 255, 0.12),
-        transparent 60%
-      )
-      no-repeat;
-  }
-  .lexi-msg:not(.user) .lexi-bubble {
-    background: rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-  }
-  .lexi-input {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  .lexi-input textarea {
-    background: rgba(255, 255, 255, 0.14);
-    color: #e5e7eb;
-  }
-}
-
 .lexi-suggestions {
   display: flex;
   flex-wrap: wrap;
