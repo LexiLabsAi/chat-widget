@@ -87,6 +87,201 @@ $lexi-muted: #64748b; // slate-500
   }
 }
 
+/* ---------- Chat window — smooth sheet-up animation ---------- */
+.lexi-window {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 380px;
+  max-width: 92vw;
+  height: 600px;
+  max-height: 85vh;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 9998;
+
+  /* keep your gradient + shadow */
+  background: linear-gradient(135deg, #d7c0ff, #9ddcf0, #ffb6e3);
+  background-size: 300% 300%;
+  animation: lexi-gradient 16s ease infinite;
+
+  /* NEW: soft elevation & motion */
+  will-change: transform, opacity, filter, box-shadow, border-radius;
+  transform-origin: bottom right;
+  transform: translateY(16px) scale(0.96);
+  opacity: 0;
+  filter: blur(6px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+
+  transition: transform 0.38s cubic-bezier(0.21, 1.02, 0.35, 1),
+    opacity 0.28s ease-out, filter 0.38s cubic-bezier(0.21, 1.02, 0.35, 1),
+    box-shadow 0.38s cubic-bezier(0.21, 1.02, 0.35, 1),
+    border-radius 0.38s cubic-bezier(0.21, 1.02, 0.35, 1);
+
+  &.open {
+    pointer-events: auto;
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  }
+
+  @keyframes lexi-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+/* If positioned left, keep origin coherent */
+:host([data-position="left"]) .lexi-window {
+  right: auto;
+  left: 20px;
+  transform-origin: bottom left;
+}
+
+/* Launcher tuck when open */
+.lexi-launcher.active {
+  transform: scale(0.9);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* ---------- Subtle stagger for content ---------- */
+.lexi-header,
+.lexi-body,
+.lexi-input {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: transform 0.36s cubic-bezier(0.21, 1.02, 0.35, 1),
+    opacity 0.26s ease-out;
+}
+
+.lexi-window.open .lexi-header {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.05s;
+}
+.lexi-window.open .lexi-body {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+.lexi-window.open .lexi-input {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.14s;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .lexi-window {
+    transition: opacity 0.2s ease !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+  .lexi-window.open {
+    opacity: 1;
+  }
+  .lexi-header,
+  .lexi-body,
+  .lexi-input {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lexi-launcher.active {
+    transform: none;
+  }
+}
+
+/* Left-position support (you already have data-position binding) */
+:host([data-position="left"]) .lexi-window {
+  right: auto;
+  left: 20px;
+  transform-origin: bottom left;
+}
+
+/* Launcher gets a tiny tuck when open */
+.lexi-launcher.active {
+  transform: scale(0.9);
+}
+
+/* Springy entrance with tiny overshoot */
+@keyframes lexi-spring-in {
+  0% {
+    transform: translateY(10px) scale(0.86);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  60% {
+    transform: translateY(0) scale(1.02);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .lexi-window {
+    transition: opacity 0.2s ease !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+  .lexi-window.open {
+    opacity: 1;
+  }
+  .lexi-launcher.active {
+    transform: none;
+  }
+}
+
+/* If widget is positioned on the LEFT, reveal from bottom-left instead */
+:host([data-position="left"]) .lexi-window {
+  right: auto;
+  left: 20px;
+  transform-origin: bottom left;
+  clip-path: circle(28px at 36px calc(100% - 36px));
+}
+:host([data-position="left"]) .lexi-window.open {
+  clip-path: circle(150% at 36px calc(100% - 36px));
+}
+
+/* Launcher gets a tiny tuck when open */
+.lexi-launcher.active {
+  transform: scale(0.85);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .lexi-window {
+    transition: opacity 0.2s ease;
+    clip-path: none !important;
+    transform: none !important;
+  }
+  .lexi-window.open {
+    opacity: 1;
+  }
+  .lexi-launcher.active {
+    transform: none;
+  }
+}
+
 /* ---------- Header ---------- */
 .lexi-header {
   display: flex;
@@ -411,7 +606,7 @@ $lexi-muted: #64748b; // slate-500
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 5px 0;
+  margin: 15px 0;
 }
 
 .lexi-chip {
@@ -431,4 +626,61 @@ $lexi-muted: #64748b; // slate-500
   &:active {
     transform: scale(0.97);
   }
+}
+
+/* date chip at top */
+.lexi-daystamp {
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  margin: 6px 0 12px;
+}
+
+/* avatar + meta */
+.lexi-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.lexi-msg.user {
+  justify-content: flex-end;
+}
+
+.lexi-avatar {
+  flex: 0 0 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #fff;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  .lexi-logo-only {
+    width: 24px;
+    position: relative;
+    left: 2px;
+    bottom: 1px;
+  }
+}
+
+.lexi-col {
+  max-width: 90%;
+}
+
+.lexi-meta {
+  font-size: 12px;
+  color: #475569;
+  margin: 0 6px 4px;
+  .lexi-name {
+    margin-right: 8px;
+  }
+}
+
+.lexi-msg.user .lexi-avatar {
+  display: none;
+}
+.lexi-msg.user .lexi-meta {
+  text-align: right;
+  margin-right: 6px;
 }
