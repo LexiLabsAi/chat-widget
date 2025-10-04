@@ -1,307 +1,457 @@
-// --- Theme tokens (kept minimal)
-$dark-bg: #0b1020;
-$dark-surface: #121a33;
-$dark-text: #e7efff;
-$dark-muted: #9fb2d3;
-$dark-accent: #6d7cff;
-$dark-border: rgba(255, 255, 255, 0.12);
-$dark-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 24px rgba(109, 124, 255, 0.2);
+/* ==== Lexi Chat — Glassmorphic, Mobile-Ready ==== */
+$lexi-a: #7b5cff;
+$lexi-b: #5ce1e6;
+$lexi-text: #0f172a; // slate-900
+$lexi-muted: #64748b; // slate-500
 
-$light-bg: #ffffff;
-$light-surface: #ffffff;
-$light-text: #111827;
-$light-muted: #6b7280;
-$light-border: rgba(0, 0, 0, 0.12);
-$light-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+.lexi-window,
+.lexi-launcher,
+.lexi-header,
+.lexi-body,
+.lexi-input {
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+  box-sizing: border-box;
+}
 
-:host {
-  all: initial;
-  contain: content; // Shadow DOM hygiene
+/* ---------- Floating launcher ---------- */
+.lexi-launcher {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 22px;
+  background: linear-gradient(135deg, $lexi-a, $lexi-b);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  z-index: 9999;
 
-  // Default (dark)
-  --lexi-bg: #{$dark-bg};
-  --lexi-surface: #{$dark-surface};
-  --lexi-text: #{$dark-text};
-  --lexi-muted: #{$dark-muted};
-  --lexi-accent: #{$dark-accent};
-  --lexi-border: #{$dark-border};
-  --lexi-shadow: #{$dark-shadow};
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+}
 
-  // Light override
-  &[data-theme="light"] {
-    --lexi-bg: #{$light-bg};
-    --lexi-surface: #{$light-surface};
-    --lexi-text: #{$light-text};
-    --lexi-muted: #{$light-muted};
-    --lexi-border: #{$light-border};
-    --lexi-shadow: #{$light-shadow};
+/* ---------- Chat window shell ---------- */
+.lexi-window {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 380px;
+  max-width: 92vw;
+  height: 600px;
+  max-height: 85vh;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(40px);
+  pointer-events: none;
+  transition: all 0.28s ease;
+  z-index: 9998;
+
+  /* soft animated gradient behind glass */
+  background: linear-gradient(135deg, #d7c0ff, #9ddcf0, #ffb6e3);
+  background-size: 300% 300%;
+  animation: lexi-gradient 16s ease infinite;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+
+  &.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    font: inherit;
-  }
-
-  /* ---------- Launcher (floating button) ---------- */
-  .lexi-launcher {
-    all: unset;
-    cursor: pointer;
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    left: auto;
-    z-index: 2147483647;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: radial-gradient(
-      80% 80% at 30% 30%,
-      var(--lexi-accent),
-      #3b3eff 80%
-    );
-    color: white;
-    display: flex; /* changed to flex */
-    align-items: center; /* vertical center */
-    justify-content: center; /* horizontal center */
-    box-shadow: var(--lexi-shadow);
-    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-
-    jhi-loading-animation {
-      width: 100px; /* match canvasSize */
-      height: 100px;
+  @keyframes lexi-gradient {
+    0% {
+      background-position: 0% 50%;
     }
-
-    // jhi-loading-animation svg {
-    //   animation: loopMotion 0.8s cubic-bezier(0.65, 0, 0.35, 1) 1 forwards;
-    // }
-
-    // @keyframes loopMotion {
-    //   0% {
-    //     transform: scale(1) rotate(0deg);
-    //   }
-    //   25% {
-    //     transform: scale(1.05) rotate(90deg);
-    //   }
-    //   50% {
-    //     transform: scale(1) rotate(180deg);
-    //   }
-    //   75% {
-    //     transform: scale(1.05) rotate(270deg);
-    //   }
-    //   100% {
-    //     transform: scale(1) rotate(360deg);
-    //   }
-    // }
-
-    /* Optional: tiny one-shot pop on the loader element itself */
-    // jhi-loading-animation {
-    //   &.pop {
-    //     animation: popOnce 0.8s cubic-bezier(0.65, 0, 0.35, 1) 1 forwards;
-    //   }
-    // }
-
-    // @keyframes popOnce {
-    //   0% {
-    //     transform: scale(1);
-    //   }
-    //   50% {
-    //     transform: scale(1.08);
-    //   }
-    //   100% {
-    //     transform: scale(1);
-    //   }
-    // }
-  }
-
-  // Flip side when host asks for left positioning
-  &[data-position="left"] .lexi-launcher {
-    left: 24px;
-    right: auto;
-  }
-
-  /* ---------- Window ---------- */
-  .lexi-window {
-    position: fixed;
-    bottom: 92px;
-    right: 24px;
-    left: auto;
-    z-index: 2147483646;
-    width: 360px;
-    max-height: min(70vh, 640px);
-    border-radius: 16px;
-    background: var(--lexi-surface);
-    color: var(--lexi-text);
-    box-shadow: var(--lexi-shadow);
-    border: 1px solid var(--lexi-border);
-    overflow: hidden;
-    transform: translateY(16px) scale(0.98);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-
-    &.open {
-      transform: none;
-      opacity: 1;
-      pointer-events: auto;
+    50% {
+      background-position: 100% 50%;
     }
-
-    .lexi-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--lexi-border);
-      background: linear-gradient(
-        180deg,
-        rgba(109, 124, 255, 0.12),
-        transparent
-      );
-
-      .lexi-logo {
-        width: 20px;
-        height: 20px;
-        display: grid;
-        place-items: center;
-      }
-
-      .lexi-title {
-        font-weight: 600;
-      }
-
-      .lexi-close {
-        margin-left: auto;
-        all: unset;
-        cursor: pointer;
-        color: var(--lexi-muted);
-        padding: 6px;
-        border-radius: 6px;
-
-        &:hover {
-          background: rgba(127, 127, 255, 0.08);
-        }
-      }
-    }
-
-    .lexi-body {
-      padding: 12px;
-      overflow: auto;
-      max-height: calc(70vh - 170px);
-      display: grid;
-      gap: 10px;
-
-      .lexi-msg {
-        display: flex;
-
-        &.user {
-          justify-content: flex-end;
-
-          .lexi-bubble {
-            background: rgba(109, 124, 255, 0.18);
-            border-color: rgba(109, 124, 255, 0.4);
-          }
-        }
-
-        .lexi-bubble {
-          max-width: 80%;
-          padding: 10px 12px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--lexi-border);
-        }
-      }
-
-      .lexi-typing .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 4px;
-        background: var(--lexi-muted);
-        animation: bounce 1s infinite ease-in-out;
-
-        &:nth-child(2) {
-          animation-delay: 0.12s;
-        }
-        &:nth-child(3) {
-          animation-delay: 0.24s;
-        }
-      }
-    }
-
-    .lexi-input {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      padding: 10px;
-      border-top: 1px solid var(--lexi-border);
-      background: var(--lexi-bg);
-
-      textarea {
-        resize: none;
-        height: 44px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--lexi-border);
-        background: transparent;
-        color: var(--lexi-text);
-      }
-
-      .lexi-send {
-        all: unset;
-        cursor: pointer;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        background: var(--lexi-accent);
-        color: white;
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      }
-    }
-  }
-
-  // Left-positioned window
-  &[data-position="left"] .lexi-window {
-    left: 24px;
-    right: auto;
-  }
-
-  /* ---------- Responsive ---------- */
-  @media (max-width: 420px) {
-    .lexi-window {
-      width: calc(100vw - 32px);
-      right: 16px;
-      bottom: 84px;
-    }
-    &[data-position="left"] .lexi-window {
-      left: 16px;
-    }
-    .lexi-launcher {
-      right: 16px;
-      bottom: 16px;
-    }
-    &[data-position="left"] .lexi-launcher {
-      left: 16px;
+    100% {
+      background-position: 0% 50%;
     }
   }
 }
 
-/* ---------- Animations ---------- */
-@keyframes bounce {
+/* ---------- Header ---------- */
+.lexi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.41);
+  backdrop-filter: blur(18px);
+  // background: rgba(255, 255, 255, 0.14);
+  //backdrop-filter: blur(18px) saturate(160%);
+
+  .lexi-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .lexi-logo {
+    width: 115px;
+    // height: 22px;
+  }
+
+  .lexi-close {
+    background: transparent;
+    border: none;
+    //color: #fff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 10px;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}
+
+/* ---------- Body (messages) ---------- */
+.lexi-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: $lexi-text;
+  -webkit-overflow-scrolling: touch;
+  background: radial-gradient(
+      1200px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.24),
+      transparent 60%
+    )
+    no-repeat;
+}
+
+/* message rows */
+.lexi-msg {
+  display: flex;
+}
+.lexi-msg.user {
+  justify-content: flex-end;
+}
+
+/* bubbles */
+.lexi-bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  word-wrap: break-word;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.lexi-msg:not(.user) .lexi-bubble {
+  background: rgba(255, 255, 255, 0.86);
+  color: $lexi-text;
+  border-bottom-left-radius: 6px;
+  backdrop-filter: blur(6px);
+}
+
+.lexi-msg.user .lexi-bubble {
+  background: linear-gradient(135deg, $lexi-a, $lexi-b);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+/* ---------- Typing indicator (animation kept) ---------- */
+.lexi-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  width: fit-content;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  color: $lexi-muted;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $lexi-muted;
+    animation: lexi-bounce 1.3s infinite ease-in-out;
+  }
+  .dot:nth-child(2) {
+    animation-delay: 0.18s;
+  }
+  .dot:nth-child(3) {
+    animation-delay: 0.36s;
+  }
+}
+
+@keyframes lexi-bounce {
   0%,
   80%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.6);
+    opacity: 0.55;
   }
   40% {
-    transform: translateY(-4px);
+    transform: translateY(-3px) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- Input row ---------- */
+// .lexi-input {
+//   display: flex;
+//   align-items: center;
+//   gap: 10px;
+//   padding: 10px;
+//   border-top: 1px solid rgba(255, 255, 255, 0.22);
+//   background: rgba(255, 255, 255, 0.28);
+//   backdrop-filter: blur(10px);
+
+//   textarea {
+//     flex: 1;
+//     resize: none;
+//     border: none;
+//     outline: none;
+//     padding: 10px 14px;
+//     border-radius: 20px;
+//     background: rgba(255, 255, 255, 0.92);
+//     color: $lexi-text;
+//     font-size: 14px;
+//     min-height: 42px;
+//     max-height: 130px;
+
+//     &::placeholder {
+//       color: $lexi-muted;
+//     }
+//     &:disabled {
+//       opacity: 0.65;
+//       cursor: not-allowed;
+//     }
+//   }
+
+//   .lexi-send {
+//     width: 42px;
+//     height: 42px;
+//     border-radius: 50%;
+//     border: none;
+//     cursor: pointer;
+//     color: #fff;
+//     font-size: 16px;
+//     display: grid;
+//     place-items: center;
+//     background: linear-gradient(135deg, $lexi-a, $lexi-b);
+//     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+//     transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+
+//     &:hover {
+//       transform: translateY(-1px);
+//       box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+//     }
+//     &:active {
+//       transform: translateY(0);
+//     }
+//     &:disabled {
+//       opacity: 0.5;
+//       cursor: not-allowed;
+//     }
+//   }
+// }
+
+// .lexi-input {
+//   padding: 10px;
+//   border-top: 1px solid rgba(255, 255, 255, 0.15);
+//   background: rgba(255, 255, 255, 0.28);
+//   backdrop-filter: blur(10px);
+
+//   .input-wrapper {
+//     display: flex;
+//     align-items: center;
+//     background: #fff;
+//     border-radius: 12px;
+//     padding: 6px 10px;
+//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+//     width: 95%;
+//   }
+
+//   textarea {
+//     flex: 1;
+//     resize: none;
+//     border: none;
+//     outline: none;
+//     font-size: 14px;
+//     background: transparent;
+//     padding: 6px;
+//     color: #111;
+//     min-height: 28px;
+//     max-height: 80px;
+
+//     &::placeholder {
+//       color: #999;
+//     }
+//   }
+
+//   .lexi-send {
+//     background: none;
+//     border: none;
+//     margin-left: 8px;
+//     cursor: pointer;
+//     color: #555;
+//     transition: color 0.2s ease;
+
+//     &:hover {
+//       color: #000;
+//     }
+
+//     &:disabled {
+//       opacity: 0.4;
+//       cursor: not-allowed;
+//     }
+//   }
+// }
+
+.lexi-input {
+  padding: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(10px);
+
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 12px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 95%; // ✅ keeps it inside the window without cut-off
+    margin: 0 auto; // ✅ centers the bar
+  }
+
+  textarea {
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+    padding: 6px;
+    color: #111;
+    min-height: 28px;
+    max-height: 80px;
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  .lexi-send {
+    background: none;
+    border: none;
+    margin-left: 8px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+
+    svg {
+      display: block;
+    }
+
+    &:hover {
+      color: #000;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* ---------- Mobile full screen ---------- */
+@media (max-width: 600px) {
+  .lexi-window {
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  .lexi-launcher {
+    bottom: 16px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ---------- Optional dark mode ---------- */
+@media (prefers-color-scheme: dark) {
+  .lexi-body {
+    background: radial-gradient(
+        1200px 600px at 50% 0%,
+        rgba(255, 255, 255, 0.12),
+        transparent 60%
+      )
+      no-repeat;
+  }
+  .lexi-msg:not(.user) .lexi-bubble {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+  }
+  .lexi-input {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .lexi-input textarea {
+    background: rgba(255, 255, 255, 0.14);
+    color: #e5e7eb;
+  }
+}
+
+.lexi-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.lexi-chip {
+  background: rgba(255, 255, 255, 0.85);
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background: #f3f3f3;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }

@@ -10,13 +10,19 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatMessage } from './chat.service';
+import { ChatService, ChatMessage } from '../services/chat.service';
 import { LoadingAnimationComponent } from '../loading-animation/loading-animation.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'lexi-chat-widget-internal',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingAnimationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingAnimationComponent,
+    HttpClientModule,
+  ],
   templateUrl: './chat-widget.component.html',
   styleUrls: ['./chat-widget.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
@@ -43,6 +49,17 @@ export class ChatWidgetComponent {
   sending = signal(false);
   // renamed from `input` to avoid clashes with the template ref
   text = signal('');
+
+  /** Optional input to override defaults later */
+  @Input() suggestionChips: string[] | null = null;
+
+  /** Generic legal/SMB defaults */
+  private readonly defaultSuggestions: string[] = [
+    'What services do you offer?',
+    'What are your hours and location?',
+    'How soon can I schedule an appointment?',
+    'Do you work with small businesses/startups?',
+  ];
 
   messages = signal<ChatMessage[]>([
     { role: 'assistant', text: 'Hi! Ask me anything about our services.' },
@@ -102,6 +119,7 @@ export class ChatWidgetComponent {
 
     try {
       const reply = await this.chat.ask(value);
+      await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
       this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
       this.scrollToBottom();
     } catch {
@@ -116,6 +134,22 @@ export class ChatWidgetComponent {
       this.sending.set(false);
       setTimeout(() => this.focusInput());
     }
+  }
+
+  get activeSuggestions(): string[] {
+    return this.suggestionChips && this.suggestionChips.length
+      ? this.suggestionChips
+      : this.defaultSuggestions;
+  }
+
+  /** Only show when we have just the welcome message and not currently sending */
+  showSuggestions(): boolean {
+    return this.messages().length === 1 && !this.sending();
+  }
+
+  sendSuggestion(text: string) {
+    this.text.set(text);
+    this.send();
   }
 
   keydown(e: KeyboardEvent) {

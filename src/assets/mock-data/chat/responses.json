@@ -1,0 +1,22 @@
+[
+  {
+    "triggers": ["hello", "hi", "hey"],
+    "reply": "Hey! How can I help today?"
+  },
+  {
+    "triggers": ["price", "pricing", "cost", "quote"],
+    "reply": "Our pricing is usage-based. For a quick estimate, tell me your monthly volume and features you need."
+  },
+  {
+    "triggers": ["feature", "features", "capabilities"],
+    "reply": "Key features: realtime chat, custom intents, analytics, and secure handoff to human agents."
+  },
+  {
+    "triggers": ["trial", "demo", "po c", "poc"],
+    "reply": "We can spin up a sandbox in minutes. Want me to schedule a 15-minute walkthrough?"
+  },
+  {
+    "triggers": ["support", "help", "issue", "bug"],
+    "reply": "I’m here—describe the problem and I’ll suggest the next step. If urgent, I can draft a support ticket."
+  }
+]
