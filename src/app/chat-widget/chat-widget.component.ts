@@ -65,7 +65,7 @@ export class ChatWidgetComponent implements OnInit {
 
   newMessage = '';
 
-  private readonly tenantId = 'f36954a9-c7b3-497f-9fb7-6f785621d1c3';
+  private tenantId = '';
   token?: string;
 
   conversationId: string = '';
@@ -85,7 +85,8 @@ export class ChatWidgetComponent implements OnInit {
 
   ngOnInit(): void {
     const origin = window.location.origin;
-
+    console.log('COMPANY ID: ' + this.companyId);
+    this.tenantId = this.companyId;
     this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
       next: (res) => {
         this.token = res.token;
