@@ -136,6 +136,15 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Wait a short tick to ensure Inputs are bound from iframe params
     setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      if (!this.companyId) {
+        this.companyId = params.get('companyId') || '';
+      }
+      if (!this.apiUrl) {
+        this.apiUrl = params.get('apiUrl') || '';
+      }
+
       const origin = window.location.origin;
       this.tenantId = this.companyId?.trim();
 
