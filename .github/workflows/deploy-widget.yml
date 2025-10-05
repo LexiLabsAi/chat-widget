@@ -5,7 +5,7 @@ on:
     branches:
       - lexi-prod
     paths:
-      - "chat-widget/**"
+      - "**/*"
 
 env:
   AWS_REGION: us-east-2
