@@ -1,9 +1,14 @@
 <!-- Floating Launcher -->
-<button class="lexi-launcher" (click)="toggle()" aria-label="Open chat">
+<button
+  class="lexi-launcher"
+  (click)="toggle()"
+  [class.active]="open()"
+  aria-label="Open chat"
+>
   ✦
   <!-- Or use your loader/logo -->
   <!-- <jhi-loading-animation [canvasSize]="100"></jhi-loading-animation> -->
-  <!-- <img src="/assets/lexi-logo.png" alt="Lexi" class="lexi-logo-only" /> -->
+  <!-- <img src="assets/lexi-logo.png" alt="Lexi" class="lexi-logo-only" /> -->
 </button>
 
 <!-- Chat Window -->
@@ -11,7 +16,7 @@
   <!-- Header -->
   <header class="lexi-header">
     <div class="lexi-title">
-      <img src="/assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
+      <img src="assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
       <!-- <span>Chat with Lexi</span> -->
     </div>
     <button class="lexi-close" (click)="toggle()" aria-label="Close">✕</button>
@@ -19,20 +24,39 @@
 
   <!-- Body (messages + typing) -->
   <section class="lexi-body" role="log" aria-live="polite" #log>
+    <!-- Day / time chip at top -->
+    <div class="lexi-daystamp">{{ formatDaystamp() }}</div>
+
     <ng-container *ngFor="let m of messages(); let i = index">
       <div class="lexi-msg" [class.user]="m.role === 'user'">
-        <div class="lexi-bubble">{{ m.text }}</div>
-      </div>
+        <!-- Assistant avatar -->
+        <div *ngIf="m.role !== 'user'" class="lexi-avatar">
+          <!-- {{ assistantInitial }} -->
+          <img src="assets/lexi-logo.png" alt="Lexi" class="lexi-logo-only" />
+        </div>
 
-      <!-- Show suggestions right after the first (welcome) message only -->
-      <div *ngIf="i === 0 && showSuggestions()" class="lexi-suggestions">
-        <button
-          *ngFor="let option of activeSuggestions"
-          class="lexi-chip"
-          (click)="sendSuggestion(option)"
-        >
-          {{ option }}
-        </button>
+        <div class="lexi-col">
+          <!-- Sender label + per-message time -->
+          <div class="lexi-meta">
+            <span class="lexi-name">{{
+              m.role === "user" ? "You" : assistantName
+            }}</span>
+            <span class="lexi-time">{{ formatTime(m, m.timestamp) }}</span>
+          </div>
+
+          <div class="lexi-bubble">{{ m.text }}</div>
+
+          <!-- Suggestions right after the first (welcome) message -->
+          <div *ngIf="i === 0 && showSuggestions()" class="lexi-suggestions">
+            <button
+              *ngFor="let option of activeSuggestions"
+              class="lexi-chip"
+              (click)="sendSuggestion(option)"
+            >
+              {{ option }}
+            </button>
+          </div>
+        </div>
       </div>
     </ng-container>
 

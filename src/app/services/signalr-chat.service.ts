@@ -28,6 +28,9 @@ export class SignalRChatService {
   private conversationStartedSource = new BehaviorSubject<any | null>(null);
   conversationStarted$ = this.conversationStartedSource.asObservable();
 
+  private ackSource = new BehaviorSubject<any | null>(null);
+  ack$ = this.ackSource.asObservable();
+
   constructor() {}
 
   connect(token: string) {
@@ -62,8 +65,18 @@ export class SignalRChatService {
 
     this.hubConnection.on(
       'Ack',
-      (action: string, ref: string, success: boolean, error: string) => {
-        console.log(`Ack for ${action} (${ref}): ${success ? 'ok' : error}`);
+      (action: string, data: any, success: boolean, error: string) => {
+        console.log(
+          `Ack for ${action}: ${success ? '✅' : '❌'} ${error || ''}`
+        );
+
+        if (action === 'SendMessage' && success && data) {
+          // The server sent back the full ChatMessageDto with timestamp
+          const msg = data as ChatMessageDto;
+
+          // ✅ Emit through ackSource
+          this.ackSource.next(msg);
+        }
       }
     );
 

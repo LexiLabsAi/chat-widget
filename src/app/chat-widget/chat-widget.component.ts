@@ -17,6 +17,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { SignalRChatService } from '../services/signalr-chat.service';
 import { WidgetTokenHttpService } from '../services/widget-token-http.service';
 import { ChatMessageDto } from '../types/interfaces/chat-message.dto.interface';
+// add this near the top of the class
+type ChatMsgWithTs = ChatMessage & { ts?: number };
 
 @Component({
   selector: 'lexi-chat-widget-internal',
@@ -53,6 +55,10 @@ export class ChatWidgetComponent implements OnInit {
   sending = signal(false);
   // renamed from `input` to avoid clashes with the template ref
   text = signal('');
+
+  // display name & avatar initial
+  assistantName = 'Lexi · AI Assistant';
+  assistantInitial = 'L';
 
   /** Optional input to override defaults later */
   @Input() suggestionChips: string[] | null = null;
@@ -93,6 +99,7 @@ export class ChatWidgetComponent implements OnInit {
     });
 
     this._signalrChatService.messages$.subscribe((msgs) => {
+      console.log(msgs);
       if (msgs && msgs.length > this.lastCount) {
         const newOnes = msgs.slice(this.lastCount);
         this.messages.update((m) => [
@@ -100,11 +107,32 @@ export class ChatWidgetComponent implements OnInit {
           ...newOnes.map((msg) => ({
             role: msg.senderId === this.userId ? 'user' : 'assistant',
             text: msg.text,
+            timestamp: msg.timestamp,
           })),
         ]);
         this.lastCount = msgs.length;
         this.sending.set(false);
       }
+    });
+
+    this._signalrChatService.ack$.subscribe((msg) => {
+      if (!msg) return;
+
+      this.messages.update((m) => {
+        if (m.length === 0) return m; // nothing to update
+
+        // clone the array so Angular change detection triggers
+        const updated = [...m];
+
+        // clone the last message and patch the timestamp from the server
+        const lastIndex = updated.length - 1;
+        updated[lastIndex] = {
+          ...updated[lastIndex],
+          timestamp: msg.timestamp || msg.timestamp,
+        };
+
+        return updated;
+      });
     });
 
     this._signalrChatService.conversationStarted$.subscribe(
@@ -150,6 +178,12 @@ export class ChatWidgetComponent implements OnInit {
   toggle() {
     const opening = !this.open();
     this.open.set(opening);
+
+    // ADD: Tell the parent loader to resize iframe
+    window.parent?.postMessage(
+      { type: opening ? 'lexi:open' : 'lexi:close' },
+      '*'
+    );
 
     if (opening) {
       this.loader?.startOpenSequence();
@@ -225,5 +259,27 @@ export class ChatWidgetComponent implements OnInit {
       e.preventDefault();
       this.send();
     }
+  }
+
+  formatTime(m: any, ts?: string): string {
+    console.log(ts);
+    if (!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  formatDaystamp(): string {
+    const first = this.messages()[0]?.ts ?? Date.now();
+    const d = new Date(first);
+    const today = new Date();
+    const day =
+      d.toDateString() === today.toDateString()
+        ? 'Today'
+        : d.toLocaleDateString([], {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          });
+    return `${day}, ${this.formatTime(this.messages()[0], first)}`;
   }
 }

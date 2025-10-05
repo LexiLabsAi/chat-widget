@@ -33,6 +33,14 @@
             "optimization": true
           },
           "configurations": {
+            "iframe": {
+              "outputHashing": "none",
+              "index": "src/iframe-index.html",
+              "main": "src/iframe-main.ts",
+              "polyfills": [],
+              "assets": ["src/assets"],
+              "optimization": true
+            },
             "production": {
               "budgets": [
                 {
