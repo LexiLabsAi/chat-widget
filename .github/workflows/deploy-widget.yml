@@ -1,0 +1,91 @@
+name: Deploy Chat Widget to S3 + CloudFront (Lexi Prod)
+
+on:
+  push:
+    branches:
+      - lexi-prod
+    paths:
+      - "chat-widget/**"
+
+env:
+  AWS_REGION: us-east-2
+
+jobs:
+  deploy-widget:
+    runs-on: ubuntu-latest
+    environment: lexi-prod
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: chat-widget
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🧱 Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build Chat Widget (iframe)
+        run: npm run build:iframe
+
+      - name: ☁️ Sync build to S3
+        run: |
+          aws s3 sync dist/widget s3://${{ vars.S3_WIDGET_BUCKET }} --delete
+
+      - name: ⚙️ Set cache headers
+        env:
+          BUCKET: ${{ vars.S3_WIDGET_BUCKET }}
+          ROOT: dist/widget
+        run: |
+          set -e
+
+          echo "🔍 Checking for iframe-index.html"
+          if [ -f "$ROOT/iframe-index.html" ]; then
+            echo "🧾 Copying iframe-index.html → index.html (for CloudFront root)"
+            aws s3 cp "$ROOT/iframe-index.html" "s3://$BUCKET/index.html" \
+              --metadata-directive REPLACE \
+              --cache-control "no-store, no-cache, must-revalidate" \
+              --expires "Thu, 01 Jan 1970 00:00:01 GMT" \
+              --content-type "text/html"
+          else
+            echo "⚠️ iframe-index.html not found!"
+          fi
+
+          echo "📦 Uploading static assets with long-term cache"
+          aws s3 sync "$ROOT" "s3://$BUCKET" \
+            --exclude "*" \
+            --include "*.js" \
+            --include "*.css" \
+            --include "*.png" \
+            --include "*.jpg" \
+            --include "*.jpeg" \
+            --include "*.svg" \
+            --include "*.ico" \
+            --include "assets/*" \
+            --cache-control "public, max-age=31536000, immutable"
+
+      - name: 🚀 Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.CLOUDFRONT_WIDGET_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      - name: ✅ Deployment complete
+        run: echo "🎉 Lexi Chat Widget deployed successfully!"
