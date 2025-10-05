@@ -34,26 +34,32 @@
       "allow-popups-to-escape-sandbox",
     ].join(" ");
 
-    // Start as launcher-sized
-    iframe.width = "64";
-    iframe.height = "64";
+    // ✅ Launcher-style defaults
     iframe.style.position = "fixed";
-    iframe.style.border = "0";
-    iframe.style.background = "transparent";
-    iframe.style.zIndex = "2147483647";
     iframe.style.bottom = "20px";
-    if ((ds.position || "right") === "left") iframe.style.left = "20px";
-    else iframe.style.right = "20px";
+    const position = ds.position || "right";
+    iframe.style[position] = "20px";
+    iframe.style.width = "64px";
+    iframe.style.height = "64px";
+    iframe.style.border = "none";
+    iframe.style.borderRadius = "50%";
+    iframe.style.overflow = "hidden";
+    iframe.style.background = "transparent";
+    iframe.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.25)";
+    iframe.style.transition = "all 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
+    iframe.style.zIndex = "2147483647"; // Highest possible
+    iframe.style.willChange = "width, height, transform";
 
     document.body.appendChild(iframe);
 
-    const setSize = (w, h) => {
-      iframe.width = String(w);
-      iframe.height = String(h);
-    };
-
     const OPEN_W = Number(ds.width || 380);
     const OPEN_H = Number(ds.height || 600);
+
+    const setSize = (w, h, r = "16px") => {
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
+      iframe.style.borderRadius = r;
+    };
 
     const origin = (() => {
       try {
@@ -63,17 +69,35 @@
       }
     })();
 
+    // ✅ Handle messages from inside the iframe
     window.addEventListener("message", (ev) => {
       if (ev.source !== iframe.contentWindow) return;
       if (origin !== "*" && ev.origin !== origin) return;
       const msg = ev.data || {};
-      if (msg.type === "lexi:open") setSize(OPEN_W, OPEN_H);
-      if (msg.type === "lexi:close") setSize(64, 64);
-      if (msg.type === "lexi:size" && msg.payload)
+
+      if (msg.type === "lexi:open") {
+        setSize(OPEN_W, OPEN_H, "16px");
+        iframe.style.boxShadow = "0 18px 48px rgba(0,0,0,0.35)";
+        iframe.animate(
+          [
+            { transform: "scale(0.85)", opacity: 0.8 },
+            { transform: "scale(1)", opacity: 1 },
+          ],
+          { duration: 260, easing: "cubic-bezier(0.22,1,0.36,1)" }
+        );
+      }
+
+      if (msg.type === "lexi:close") {
+        setSize(64, 64, "50%");
+        iframe.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
+      }
+
+      if (msg.type === "lexi:size" && msg.payload) {
         setSize(msg.payload.w, msg.payload.h);
+      }
     });
 
-    // Optional host API
+    // ✅ Optional host API
     window.lexi = window.lexi || {};
     window.lexi.open = () =>
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
