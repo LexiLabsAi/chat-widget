@@ -8,6 +8,7 @@ import {
   ViewChild,
   ElementRef,
   OnInit,
+  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,7 +34,7 @@ type ChatMsgWithTs = ChatMessage & { ts?: number };
   styleUrls: ['./chat-widget.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class ChatWidgetComponent implements OnInit {
+export class ChatWidgetComponent implements OnInit, AfterViewInit {
   @Input() apiUrl = '';
   @Input() companyId = '';
   @Input() theme: 'dark' | 'light' = 'dark';
@@ -84,21 +85,6 @@ export class ChatWidgetComponent implements OnInit {
   messages = signal<any[]>([]);
 
   ngOnInit(): void {
-    const origin = window.location.origin;
-    console.log('COMPANY ID: ' + this.companyId);
-    this.tenantId = this.companyId;
-    this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
-      next: (res) => {
-        this.token = res.token;
-        this._signalrChatService.connect(this.token).then(() => {
-          this._signalrChatService.startConversation();
-        });
-      },
-      error: (err) => {
-        console.error('Error issuing widget token:', err);
-      },
-    });
-
     this._signalrChatService.messages$.subscribe((msgs) => {
       console.log(msgs);
       if (msgs && msgs.length > this.lastCount) {
@@ -145,6 +131,34 @@ export class ChatWidgetComponent implements OnInit {
         }
       }
     );
+  }
+
+  ngAfterViewInit(): void {
+    // Wait a short tick to ensure Inputs are bound from iframe params
+    setTimeout(() => {
+      const origin = window.location.origin;
+      this.tenantId = this.companyId?.trim();
+
+      if (!this.tenantId) {
+        console.error('❌ Missing companyId — cannot issue token');
+        return;
+      }
+
+      console.log(`🏷 Using Tenant: ${this.tenantId}, Origin: ${origin}`);
+
+      this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
+        next: (res) => {
+          this.token = res.token;
+          console.log('🎫 Widget token issued');
+          this._signalrChatService.connect(this.token).then(() => {
+            this._signalrChatService.startConversation();
+          });
+        },
+        error: (err) => {
+          console.error('Error issuing widget token:', err);
+        },
+      });
+    }, 0);
   }
 
   constructor(

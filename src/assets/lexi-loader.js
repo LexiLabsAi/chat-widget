@@ -11,11 +11,16 @@
   onReady(() => {
     const s = document.currentScript;
     const ds = (s && s.dataset) || {};
-    const src = ds.src || "https://cdn.yourdomain.com/widget/index.html"; // update after deploy
+    const src =
+      ds.src ||
+      ds["src"] ||
+      ds["data-src"] ||
+      "https://cdn.yourdomain.com/widget/index.html";
 
     const url = new URL(src);
     if (ds.apiUrl) url.searchParams.set("apiUrl", ds.apiUrl);
     if (ds.companyId) url.searchParams.set("companyId", ds.companyId);
+
     url.searchParams.set("theme", ds.theme || "dark");
     url.searchParams.set("position", ds.position || "right");
 
