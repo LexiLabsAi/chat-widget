@@ -7,12 +7,16 @@ import {
   HostBinding,
   ViewChild,
   ElementRef,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService, ChatMessage } from '../services/chat.service';
 import { LoadingAnimationComponent } from '../loading-animation/loading-animation.component';
 import { HttpClientModule } from '@angular/common/http';
+import { SignalRChatService } from '../services/signalr-chat.service';
+import { WidgetTokenHttpService } from '../services/widget-token-http.service';
+import { ChatMessageDto } from '../types/interfaces/chat-message.dto.interface';
 
 @Component({
   selector: 'lexi-chat-widget-internal',
@@ -27,7 +31,7 @@ import { HttpClientModule } from '@angular/common/http';
   styleUrls: ['./chat-widget.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class ChatWidgetComponent {
+export class ChatWidgetComponent implements OnInit {
   @Input() apiUrl = '';
   @Input() companyId = '';
   @Input() theme: 'dark' | 'light' = 'dark';
@@ -53,19 +57,72 @@ export class ChatWidgetComponent {
   /** Optional input to override defaults later */
   @Input() suggestionChips: string[] | null = null;
 
+  newMessage = '';
+
+  private readonly tenantId = 'f36954a9-c7b3-497f-9fb7-6f785621d1c3';
+  token?: string;
+
+  conversationId: string = '';
+  userId: string = '';
+
+  lastCount = 0;
+
   /** Generic legal/SMB defaults */
   private readonly defaultSuggestions: string[] = [
-    'What services do you offer?',
-    'What are your hours and location?',
-    'How soon can I schedule an appointment?',
-    'Do you work with small businesses/startups?',
+    // 'What services do you offer?',
+    // 'What are your hours and location?',
+    // 'How soon can I schedule an appointment?',
+    // 'Do you work with small businesses/startups?',
   ];
 
-  messages = signal<ChatMessage[]>([
-    { role: 'assistant', text: 'Hi! Ask me anything about our services.' },
-  ]);
+  messages = signal<any[]>([]);
 
-  constructor(private chat: ChatService) {
+  ngOnInit(): void {
+    const origin = window.location.origin;
+
+    this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
+      next: (res) => {
+        this.token = res.token;
+        this._signalrChatService.connect(this.token).then(() => {
+          this._signalrChatService.startConversation();
+        });
+      },
+      error: (err) => {
+        console.error('Error issuing widget token:', err);
+      },
+    });
+
+    this._signalrChatService.messages$.subscribe((msgs) => {
+      if (msgs && msgs.length > this.lastCount) {
+        const newOnes = msgs.slice(this.lastCount);
+        this.messages.update((m) => [
+          ...m,
+          ...newOnes.map((msg) => ({
+            role: msg.senderId === this.userId ? 'user' : 'assistant',
+            text: msg.text,
+          })),
+        ]);
+        this.lastCount = msgs.length;
+        this.sending.set(false);
+      }
+    });
+
+    this._signalrChatService.conversationStarted$.subscribe(
+      (res: { conversationId: string; userId: string }) => {
+        if (res) {
+          this.conversationId = res.conversationId;
+          this.userId = res.userId;
+          console.log('✅ Conversation started:', res);
+        }
+      }
+    );
+  }
+
+  constructor(
+    private chat: ChatService,
+    private _signalrChatService: SignalRChatService,
+    private _tokenHttpService: WidgetTokenHttpService
+  ) {
     effect(() => {
       this.chat.configure({ apiUrl: this.apiUrl, companyId: this.companyId });
     });
@@ -112,28 +169,39 @@ export class ChatWidgetComponent {
     const value = this.text().trim();
     if (!value) return;
 
+    const chatmsg: ChatMessageDto = {
+      messageId: '',
+      tenantId: this.tenantId,
+      conversationId: this.conversationId,
+      senderId: '',
+      text: value,
+    };
+
     this.messages.update((m) => [...m, { role: 'user', text: value }]);
     this.text.set('');
     this.sending.set(true);
     this.scrollToBottom();
-
-    try {
-      const reply = await this.chat.ask(value);
-      await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
-      this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
-      this.scrollToBottom();
-    } catch {
-      this.messages.update((m) => [
-        ...m,
-        {
-          role: 'assistant',
-          text: 'Sorry—something went wrong. Please try again.',
-        },
-      ]);
-    } finally {
-      this.sending.set(false);
-      setTimeout(() => this.focusInput());
+    if (value.trim()) {
+      this._signalrChatService.sendMessage(chatmsg);
+      this.newMessage = '';
     }
+    // try {
+    //   const reply = await this.chat.ask(value);
+    //   await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
+    //   this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
+    //   this.scrollToBottom();
+    // } catch {
+    //   this.messages.update((m) => [
+    //     ...m,
+    //     {
+    //       role: 'assistant',
+    //       text: 'Sorry—something went wrong. Please try again.',
+    //     },
+    //   ]);
+    // } finally {
+    //   this.sending.set(false);
+    //   setTimeout(() => this.focusInput());
+    // }
   }
 
   get activeSuggestions(): string[] {
