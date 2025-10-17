@@ -21,6 +21,7 @@ bootstrapApplication(ChatWidgetComponent, {
       host.setAttribute('company-id', readParam('companyId'));
     host.setAttribute('theme', readParam('theme', 'dark'));
     host.setAttribute('position', readParam('position', 'right'));
+    host.setAttribute('embedded', '1');
   }
 
   // Tell parent we’re alive

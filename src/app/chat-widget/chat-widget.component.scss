@@ -685,3 +685,32 @@ $lexi-muted: #64748b; // slate-500
   text-align: right;
   margin-right: 6px;
 }
+
+/* When running inside the loader iframe, fill the iframe and hide internal launcher */
+:host([embedded]) .lexi-launcher {
+  display: none !important;
+}
+
+:host([embedded]) .lexi-window {
+  position: absolute !important;
+  inset: 0 !important; /* top:0; right:0; bottom:0; left:0 */
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 16px; /* keep your rounded corners */
+  transform: none; /* let the outer iframe animate scale if you want */
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+  box-shadow: none; /* outer iframe already has a shadow */
+}
+
+/* If you want the “open” transitions inside the iframe, you can keep them: */
+:host([embedded]) .lexi-window.open {
+  transform: none;
+  box-shadow: none;
+}
+
+/* If positioned on the left via attribute, still support it when embedded */
+:host([embedded][data-position="left"]) .lexi-window {
+  transform-origin: bottom left;
+}
