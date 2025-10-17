@@ -43,33 +43,36 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Build Chat Widget (iframe)
+        # Make sure this builds with the iframe configuration (hashing is enabled there)
         run: npm run build:iframe
 
-      - name: ☁️ Sync build to S3
-        run: |
-          aws s3 sync dist/widget s3://${{ vars.S3_WIDGET_BUCKET }} --delete
-
-      - name: ⚙️ Set cache headers
+      - name: ☁️ Upload with correct cache headers (single pass)
         env:
           BUCKET: ${{ vars.S3_WIDGET_BUCKET }}
           ROOT: dist/widget
         run: |
           set -e
 
-          echo "🔍 Checking for iframe-index.html"
+          echo "📰 Upload HTML with no-store"
+          aws s3 cp "$ROOT" "s3://$BUCKET" \
+            --recursive \
+            --exclude "*" \
+            --include "*.html" \
+            --metadata-directive REPLACE \
+            --cache-control "no-store, no-cache, must-revalidate" \
+            --content-type "text/html"
+
           if [ -f "$ROOT/iframe-index.html" ]; then
-            echo "🧾 Copying iframe-index.html → index.html (for CloudFront root)"
+            echo "🧾 Copy iframe-index.html → index.html at bucket root (no-store)"
             aws s3 cp "$ROOT/iframe-index.html" "s3://$BUCKET/index.html" \
               --metadata-directive REPLACE \
               --cache-control "no-store, no-cache, must-revalidate" \
-              --expires "Thu, 01 Jan 1970 00:00:01 GMT" \
               --content-type "text/html"
-          else
-            echo "⚠️ iframe-index.html not found!"
           fi
 
-          echo "📦 Uploading static assets with long-term cache"
-          aws s3 sync "$ROOT" "s3://$BUCKET" \
+          echo "📦 Upload hashed static assets with long-term cache"
+          aws s3 cp "$ROOT" "s3://$BUCKET" \
+            --recursive \
             --exclude "*" \
             --include "*.js" \
             --include "*.css" \
@@ -79,7 +82,12 @@ jobs:
             --include "*.svg" \
             --include "*.ico" \
             --include "assets/*" \
+            --metadata-directive REPLACE \
             --cache-control "public, max-age=31536000, immutable"
+
+          echo "🧹 Remove orphaned files (without touching metadata)"
+          aws s3 sync "$ROOT" "s3://$BUCKET" --delete \
+            --exclude "*" --include "DO_NOT_MATCH_ANYTHING"
 
       - name: 🚀 Invalidate CloudFront cache
         run: |
