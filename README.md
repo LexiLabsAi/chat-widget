@@ -62,7 +62,7 @@ We ship a dedicated **iframe** build (stable filenames):
 
 - `src/iframe-index.html` → **`dist/widget/index.html`**
 - `src/iframe-main.ts` → **`dist/widget/main.js`**
-- `src/assets/**` → **`dist/widget/assets/**`**
+- `src/assets/**` → **`dist/widget/assets/**`\*\*
 
 Scripts (in `package.json`):
 
@@ -114,25 +114,13 @@ https://cdn.yourdomain.com/widget/assets/lexi-logo.png
 ### Minimal copy‑paste
 
 ```html
-<script
-  src="https://cdn.yourdomain.com/widget/assets/lexi-loader.js"
-  defer
-  data-src="https://cdn.yourdomain.com/widget/index.html"
-  data-api-url="https://api.yourdomain.com"
-  data-company-id="acme-123">
-</script>
+<script src="https://cdn.yourdomain.com/widget/assets/lexi-loader.js" defer data-src="https://cdn.yourdomain.com/widget/index.html" data-api-url="https://api.yourdomain.com" data-company-id="acme-123"></script>
 ```
 
 ### Full options
 
 ```html
-<script
-  src="https://cdn.yourdomain.com/widget/assets/lexi-loader.js"
-  defer
-  data-src="https://cdn.yourdomain.com/widget/index.html"
-  data-api-url="https://api.yourdomain.com"
-  data-company-id="acme-123"
-  data-theme="dark"           <!-- dark | light (default: dark) -->
+<script src="https://cdn.yourdomain.com/widget/assets/lexi-loader.js" defer data-src="https://cdn.yourdomain.com/widget/index.html" data-api-url="https://api.yourdomain.com" data-company-id="acme-123" data-theme="dark" <!-- dark | light (default: dark) -->
   data-position="right"       <!-- right | left (default: right) -->
   data-width="380"            <!-- open width in px (default: 380) -->
   data-height="600"           <!-- open height in px (default: 600) -->
@@ -140,18 +128,37 @@ https://cdn.yourdomain.com/widget/assets/lexi-logo.png
 </script>
 ```
 
+<!-- Same look as before (20px from bottom/right, 64px launcher, 380×600 when open) -->
+
+all-options
+
+<script
+  src="https://d1w06bwqtkkeue.cloudfront.net/assets/lexi-loader.js?v=20251017-3"
+  defer
+  data-src="https://d1w06bwqtkkeue.cloudfront.net/index.html"
+  data-api-url="https://api.lexilabs.ai"
+  data-company-id="demo-tenant"
+  data-bottom="20"
+  data-right="20"
+  data-closed-width="64"
+  data-closed-height="64"
+  data-width="380"
+  data-height="600"
+  data-position="right"
+></script>
+
 **Attributes reference**
 
-| Attribute         | Required | Default     | Description                                 |
-|-------------------|----------|-------------|---------------------------------------------|
-| `data-src`        | ✅       | —           | URL to `index.html` (the iframe page)       |
-| `data-api-url`    | ✅       | —           | Backend API base URL                         |
-| `data-company-id` | ✅       | —           | Tenant/company identifier                    |
-| `data-theme`      | ❌       | `dark`      | `dark` \| `light`                            |
-| `data-position`   | ❌       | `right`     | `right` \| `left` (dock position)            |
-| `data-width`      | ❌       | `380`       | Open width in px                             |
-| `data-height`     | ❌       | `600`       | Open height in px                            |
-| `data-title`      | ❌       | `Lexi Chat` | iFrame title/aria-label                      |
+| Attribute         | Required | Default     | Description                           |
+| ----------------- | -------- | ----------- | ------------------------------------- |
+| `data-src`        | ✅       | —           | URL to `index.html` (the iframe page) |
+| `data-api-url`    | ✅       | —           | Backend API base URL                  |
+| `data-company-id` | ✅       | —           | Tenant/company identifier             |
+| `data-theme`      | ❌       | `dark`      | `dark` \| `light`                     |
+| `data-position`   | ❌       | `right`     | `right` \| `left` (dock position)     |
+| `data-width`      | ❌       | `380`       | Open width in px                      |
+| `data-height`     | ❌       | `600`       | Open height in px                     |
+| `data-title`      | ❌       | `Lexi Chat` | iFrame title/aria-label               |
 
 ### Programmatic control (optional)
 
@@ -178,7 +185,7 @@ The loader exposes a tiny API:
 In the component, `toggle()` should inform the parent:
 
 ```ts
-window.parent?.postMessage({ type: opening ? 'lexi:open' : 'lexi:close' }, '*');
+window.parent?.postMessage({ type: opening ? "lexi:open" : "lexi:close" }, "*");
 ```
 
 ---
@@ -219,8 +226,8 @@ Add/remove capabilities only if needed (e.g., microphone).
 
 ## Browser support
 
-- Chrome / Edge / Firefox / Safari (evergreen) ✅  
-- iOS Safari 13+ ✅  
+- Chrome / Edge / Firefox / Safari (evergreen) ✅
+- iOS Safari 13+ ✅
 - Internet Explorer ❌
 
 ---
@@ -228,22 +235,28 @@ Add/remove capabilities only if needed (e.g., microphone).
 ## Troubleshooting
 
 **Nothing renders**
+
 - Open DevTools console. If you see 404s, confirm the loader’s `data-src` points to the deployed `index.html`.
 - Verify `main.js` loads (Network tab). CSP may be blocking `frame-src`; add your CDN to `frame-src`.
 
 **Widget opens but can’t call the API**
+
 - Check CORS on your API. `connect-src` of the host’s CSP must include your API origin.
 
 **Images not showing**
+
 - Ensure image paths are `assets/...` and deployed under `dist/widget/assets/`.
 
 **Loader inserted twice**
+
 - Remove duplicate `<script>` includes; loader guards with `window.__LEXI_WIDGET__`.
 
 **No animation on open**
+
 - Host may block inline styles via CSP. We resize via attributes as a fallback (works, just not animated).
 
 **Mixed content warning**
+
 - All URLs (loader, iframe, API, images) must be **HTTPS**.
 
 ---
@@ -278,4 +291,3 @@ Add your license of choice here (MIT recommended for embeddable widgets).
   - Initial public release
   - iframe loader + Shadow DOM widget
   - Timestamped messages, suggestion chips, modern UI
-
