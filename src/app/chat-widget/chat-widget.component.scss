@@ -687,32 +687,33 @@ $lexi-muted: #64748b; // slate-500
 }
 
 /* When running inside the loader iframe, fill the iframe and hide internal launcher */
-:host([embedded]) .lexi-launcher {
-  display: none !important;
+/* ===== Embedded mode (inside launcher iframe) ===== */
+:host([embedded]) {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
+/* Fill the iframe — ignore page-overlay offsets */
 :host([embedded]) .lexi-window {
   position: absolute !important;
-  inset: 0 !important; /* top:0; right:0; bottom:0; left:0 */
+  inset: 0 !important; /* top/right/bottom/left: 0 */
   width: 100% !important;
   height: 100% !important;
-  border-radius: 16px; /* keep your rounded corners */
-  transform: none; /* let the outer iframe animate scale if you want */
-  opacity: 1;
-  filter: none;
-  pointer-events: auto;
-  box-shadow: none; /* outer iframe already has a shadow */
+  max-width: 100% !important;
+  max-height: 100% !important;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  pointer-events: auto !important;
+  box-shadow: none !important; /* outer iframe already has shadow */
 }
 
-/* If you want the “open” transitions inside the iframe, you can keep them: */
-:host([embedded]) .lexi-window.open {
-  transform: none;
-  box-shadow: none;
-}
-
-/* If positioned on the left via attribute, still support it when embedded */
-:host([embedded][data-position="left"]) .lexi-window {
-  transform-origin: bottom left;
+/* Loader is the launcher; hide the internal floating button */
+:host([embedded]) .lexi-launcher {
+  display: none !important;
 }
 
 /* Optional: make input truly edge-to-edge when embedded */
