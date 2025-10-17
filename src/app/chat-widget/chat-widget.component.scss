@@ -17,8 +17,8 @@ $lexi-muted: #64748b; // slate-500
 /* ---------- Floating launcher ---------- */
 .lexi-launcher {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  // bottom: 20px;
+  // right: 20px;
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -596,10 +596,10 @@ $lexi-muted: #64748b; // slate-500
     border-radius: 0;
   }
   .lexi-launcher {
-    bottom: 16px;
-    right: 16px;
-    width: 56px;
-    height: 56px;
+    // bottom: 16px;
+    // right: 16px;
+    // width: 56px;
+    // height: 56px;
   }
 }
 
