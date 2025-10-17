@@ -714,3 +714,9 @@ $lexi-muted: #64748b; // slate-500
 :host([embedded][data-position="left"]) .lexi-window {
   transform-origin: bottom left;
 }
+
+/* Optional: make input truly edge-to-edge when embedded */
+:host([embedded]) .lexi-input .input-wrapper {
+  width: 100%;
+  margin: 0;
+}

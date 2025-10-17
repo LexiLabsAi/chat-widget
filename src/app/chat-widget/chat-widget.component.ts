@@ -47,6 +47,18 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
     return this.position;
   }
 
+  // NEW: automatically mark when running inside an iframe
+  private readonly inIframe = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
+  @HostBinding('attr.embedded') get embeddedAttr() {
+    return this.inIframe ? '1' : null;
+  }
+
   @ViewChild(LoadingAnimationComponent) loader?: LoadingAnimationComponent;
 
   @ViewChild('log') log?: ElementRef<HTMLElement>;
