@@ -39,7 +39,14 @@
               "main": "src/iframe-main.ts",
               "polyfills": [],
               "assets": ["src/assets"],
-              "optimization": true
+              "optimization": true,
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12kb",
+                  "maximumError": "16kb"
+                }
+              ]
             },
             "production": {
               "outputHashing": "all",
