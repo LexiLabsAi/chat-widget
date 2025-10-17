@@ -141,6 +141,7 @@
     if (ds.companyId) url.searchParams.set("companyId", ds.companyId);
     url.searchParams.set("theme", ds.theme || "dark");
     url.searchParams.set("position", (ds.position || "right").toLowerCase());
+    url.searchParams.set("embedded", "1");
 
     const iframe = document.createElement("iframe");
     iframe.src = url.toString();
