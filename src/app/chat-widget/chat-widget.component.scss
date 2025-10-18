@@ -589,11 +589,11 @@ $lexi-muted: #64748b; // slate-500
 /* ---------- Mobile full screen ---------- */
 @media (max-width: 600px) {
   .lexi-window {
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
+    // right: 0;
+    // bottom: 0;
+    // width: 100vw;
+    // height: 100vh;
+    // border-radius: 0;
   }
   .lexi-launcher {
     // bottom: 16px;
