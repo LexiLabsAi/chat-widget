@@ -215,7 +215,7 @@
         iframe.style.boxShadow = "0 18px 48px rgba(0,0,0,0.35)";
         iframe.animate(
           [
-            { transform: "scale(1)", opacity: 0.8 },
+            { transform: "scale(0.85)", opacity: 0.8 },
             { transform: "scale(1)", opacity: 1 },
           ],
           { duration: 260, easing: "cubic-bezier(0.22,1,0.36,1)" }
