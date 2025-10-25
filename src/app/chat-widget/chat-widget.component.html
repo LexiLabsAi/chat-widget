@@ -1,4 +1,4 @@
-<!-- Floating Launcher -->
+<!-- Launcher (only for standalone testing, hidden in iframe) -->
 <button
   *ngIf="!inIframe"
   class="lexi-launcher"
@@ -7,118 +7,36 @@
   aria-label="Open chat"
 >
   ✦
-  <!-- Or use your loader/logo -->
-  <!-- <jhi-loading-animation [canvasSize]="100"></jhi-loading-animation> -->
-  <!-- <img src="assets/lexi-logo.png" alt="Lexi" class="lexi-logo-only" /> -->
 </button>
 
 <!-- Chat Window -->
 <div class="lexi-window" [class.open]="open()">
-  <!-- Header -->
   <header class="lexi-header">
     <div class="lexi-title">
       <img src="assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
-      <!-- <span>Chat with Lexi</span> -->
     </div>
     <button class="lexi-close" (click)="toggle()" aria-label="Close">✕</button>
   </header>
 
-  <!-- Body (messages + typing) -->
   <section class="lexi-body" role="log" aria-live="polite" #log>
-    <!-- Day / time chip at top -->
     <div class="lexi-daystamp">{{ formatDaystamp() }}</div>
-
     <ng-container *ngFor="let m of messages(); let i = index">
       <div class="lexi-msg" [class.user]="m.role === 'user'">
-        <!-- Assistant avatar -->
         <div *ngIf="m.role !== 'user'" class="lexi-avatar">
-          <!-- {{ assistantInitial }} -->
           <img src="assets/lexi-logo.png" alt="Lexi" class="lexi-logo-only" />
         </div>
-
         <div class="lexi-col">
-          <!-- Sender label + per-message time -->
           <div class="lexi-meta">
             <span class="lexi-name">{{
               m.role === "user" ? "You" : assistantName
             }}</span>
             <span class="lexi-time">{{ formatTime(m, m.timestamp) }}</span>
           </div>
-
           <div class="lexi-bubble">{{ m.text }}</div>
-
-          <!-- Suggestions right after the first (welcome) message -->
-          <div *ngIf="i === 0 && showSuggestions()" class="lexi-suggestions">
-            <button
-              *ngFor="let option of activeSuggestions"
-              class="lexi-chip"
-              (click)="sendSuggestion(option)"
-            >
-              {{ option }}
-            </button>
-          </div>
         </div>
       </div>
     </ng-container>
-
-    <div *ngIf="sending()" class="lexi-typing" aria-label="Lexi is typing">
-      <span class="dot"></span><span class="dot"></span
-      ><span class="dot"></span>
-    </div>
   </section>
-
-  <!-- Input -->
-  <!-- <footer class="lexi-input">
-    <textarea
-      #input
-      [placeholder]="sending() ? 'Thinking…' : 'Type a message…'"
-      [disabled]="sending()"
-      (keydown)="keydown($event)"
-      [ngModel]="text()"
-      (ngModelChange)="text.set($event)"
-    ></textarea>
-
-    <button
-      class="lexi-send"
-      [disabled]="sending()"
-      (click)="send()"
-      aria-label="Send"
-    >
-      ➤
-    </button>
-  </footer> -->
-
-  <!-- <footer class="lexi-input">
-    <div class="input-wrapper">
-      <textarea
-        #input
-        placeholder="Type here..."
-        [disabled]="sending()"
-        (keydown)="keydown($event)"
-        [ngModel]="text()"
-        (ngModelChange)="text.set($event)"
-      ></textarea>
-
-      <button
-        class="lexi-send"
-        [disabled]="sending()"
-        (click)="send()"
-        aria-label="Send"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
-          viewBox="0 0 16 16"
-          width="18"
-          height="18"
-        >
-          <path
-            d="M15.854.146a.5.5 0 0 0-.53-.11l-15 6a.5.5 0 0 0 0 .928l15 6a.5.5 0 0 0 .686-.574l-1.5-7a.5.5 0 0 0 0-.708l1.5-7a.5.5 0 0 0-.156-.536zM6.44 9.44 1.72 8l4.72-1.44L9.44 8 6.44 9.44z"
-          />
-        </svg>
-      </button>
-    </div>
-  </footer> -->
 
   <footer class="lexi-input">
     <div class="input-wrapper">
@@ -130,28 +48,13 @@
         [ngModel]="text()"
         (ngModelChange)="text.set($event)"
       ></textarea>
-
       <button
         class="lexi-send"
         [disabled]="sending()"
         (click)="send()"
         aria-label="Send"
       >
-        <!-- Modern send icon -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          viewBox="0 0 24 24"
-          width="22"
-          height="22"
-        >
-          <line x1="22" y1="2" x2="11" y2="13" />
-          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-        </svg>
+        ➤
       </button>
     </div>
   </footer>

@@ -8,7 +8,7 @@ function readParam(name: string, def = ''): string {
   return u.searchParams.get(name) ?? def;
 }
 
-// ✅ Pre-set attributes before bootstrapping
+// ✅ Pre-create the element and set embedded attribute before bootstrap
 const host = document.createElement('lexi-chat-widget-internal');
 document.body.appendChild(host);
 
@@ -17,11 +17,11 @@ if (readParam('companyId'))
   host.setAttribute('company-id', readParam('companyId'));
 host.setAttribute('theme', readParam('theme', 'dark'));
 host.setAttribute('position', readParam('position', 'right'));
-host.setAttribute('embedded', '1'); // ✅ this must exist BEFORE bootstrap
+host.setAttribute('embedded', '1'); // critical — tells Angular it's inside iframe
 
 bootstrapApplication(ChatWidgetComponent, {
   providers: [provideHttpClient()],
 }).then(() => {
-  // Angular will hydrate the existing element instead of creating a new one
+  // Inform parent that iframe is ready
   window.parent?.postMessage({ type: 'lexi:ready' }, '*');
 });
