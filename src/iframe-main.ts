@@ -8,28 +8,20 @@ function readParam(name: string, def = ''): string {
   return u.searchParams.get(name) ?? def;
 }
 
+// ✅ Pre-set attributes before bootstrapping
+const host = document.createElement('lexi-chat-widget-internal');
+document.body.appendChild(host);
+
+if (readParam('apiUrl')) host.setAttribute('api-url', readParam('apiUrl'));
+if (readParam('companyId'))
+  host.setAttribute('company-id', readParam('companyId'));
+host.setAttribute('theme', readParam('theme', 'dark'));
+host.setAttribute('position', readParam('position', 'right'));
+host.setAttribute('embedded', '1'); // ✅ this must exist BEFORE bootstrap
+
 bootstrapApplication(ChatWidgetComponent, {
   providers: [provideHttpClient()],
 }).then(() => {
-  // Set inputs on the custom element via attributes
-  const host = document.querySelector(
-    'lexi-chat-widget-internal'
-  ) as HTMLElement | null;
-  if (host) {
-    if (readParam('apiUrl')) host.setAttribute('api-url', readParam('apiUrl'));
-    if (readParam('companyId'))
-      host.setAttribute('company-id', readParam('companyId'));
-    host.setAttribute('theme', readParam('theme', 'dark'));
-    host.setAttribute('position', readParam('position', 'right'));
-    host.setAttribute('embedded', '1');
-    if (readParam('embedded')) host.setAttribute('embedded', '1');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const launcher = document.querySelector('.lexi-launcher');
-    if (launcher) launcher.remove(); // safety: kill internal launcher if any slipped through
-  });
-
-  // Tell parent we’re alive
+  // Angular will hydrate the existing element instead of creating a new one
   window.parent?.postMessage({ type: 'lexi:ready' }, '*');
 });
