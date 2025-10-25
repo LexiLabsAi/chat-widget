@@ -20,7 +20,7 @@
   </body>
 </html> -->
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -30,9 +30,30 @@
     />
     <title>Lexi Widget</title>
     <base href="/" />
-    <!-- Keep fonts local or skip; avoid cross-site layout flashes -->
   </head>
   <body style="margin: 0">
-    <!-- We render the component to body; it will fill the iframe in embedded mode -->
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lexi Chat Widget</title>
+    <base href="/" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Host element present so Angular mounts here -->
+    <lexi-chat-widget-internal></lexi-chat-widget-internal>
+    <!-- IMPORTANT: include the BUILT file name you ship (hash ok) -->
+    <script src="iframe-main.js" defer></script>
   </body>
 </html>

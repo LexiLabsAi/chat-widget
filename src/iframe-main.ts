@@ -26,10 +26,24 @@
 //   window.parent?.postMessage({ type: 'lexi:ready' }, '*');
 // });
 
+// import { bootstrapApplication } from '@angular/platform-browser';
+// import { ChatWidgetComponent } from './app/chat-widget/chat-widget.component';
+
+// // Renders the component as a standalone root (no host app shell)
+// bootstrapApplication(ChatWidgetComponent, {
+//   providers: [],
+// }).catch((err) => console.error(err));
+
+import 'zone.js'; // keep if your app uses ZoneJS (most do)
 import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
 import { ChatWidgetComponent } from './app/chat-widget/chat-widget.component';
 
-// Renders the component as a standalone root (no host app shell)
+// No need to pre-create or set attributes; your component reads URL params.
 bootstrapApplication(ChatWidgetComponent, {
-  providers: [],
-}).catch((err) => console.error(err));
+  providers: [provideHttpClient()],
+})
+  .then(() => {
+    window.parent?.postMessage({ type: 'lexi:ready' }, '*');
+  })
+  .catch((err) => console.error(err));

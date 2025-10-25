@@ -24,7 +24,7 @@ platformBrowserDynamic()
 
 document.addEventListener('DOMContentLoaded', () => {
   const d = document;
-  d.documentElement.style.height = '100%';
+  // d.documentElement.style.height = '100%';
   d.body.style.height = '100%';
   d.body.style.margin = '0';
 });

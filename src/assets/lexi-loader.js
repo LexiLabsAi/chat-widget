@@ -386,6 +386,8 @@
       position,
     });
 
+    console.log("[Lexi] iframeUrl:", iframeUrl);
+
     // Iframe (initially hidden)
     const iframe = document.createElement("iframe");
     iframe.src = iframeUrl;
