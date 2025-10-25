@@ -533,39 +533,33 @@ $lexi-muted: #64748b; // slate-500
   margin-right: 6px;
 }
 
-/* ===== Embedded (inside iframe) ===== */
-:host([embedded]) .lexi-window {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important; /* keep ONLY this */
-  transform: none !important;
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
-  clip-path: none !important; /* just in case */
-  z-index: 0 !important; /* inner chrome not competing */
+/* ===== Embedded (inside iframe) — minimal overrides ===== */
+
+/* Hide the internal floating button inside the iframe.
+   The outer site provides the launcher. */
+:host([embedded]) .lexi-launcher {
+  display: none !important;
 }
 
+/* Let the base styles control size/position/appearance.
+     Do NOT force full-bleed or transparent background. */
+:host([embedded]) .lexi-window {
+  position: fixed !important; /* keep standard floating behavior */
+  /* no width/height/inset overrides */
+  /* no background override */
+  /* no clip-path/opacity/filter overrides */
+  /* no z-index override */
+}
+
+/* Keep your normal paddings/margins; don't zero them out. */
 :host([embedded]) .lexi-header,
 :host([embedded]) .lexi-body,
 :host([embedded]) .lexi-input {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
+  /* no overrides */
 }
 
+/* Preserve your input wrapper width behavior */
 :host([embedded]) .lexi-input .input-wrapper {
-  width: 100% !important;
-  margin: 0 !important;
-}
-
-/* Don’t render the internal floating button when embedded */
-:host([embedded]) .lexi-launcher {
-  display: none !important;
+  width: 95% !important;
+  margin: 0 auto !important;
 }
