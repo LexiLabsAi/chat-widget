@@ -34,8 +34,8 @@
     return u.toString();
   }
 
-  const sideProp = position === "left" ? "left" : "right";
-  iframe.style[sideProp] = launcherSide;
+  // const sideProp = position === "left" ? "left" : "right";
+  // iframe.style[sideProp] = launcherSide;
 
   onReady(() => {
     // Use the captured reference; do not call document.currentScript here.
@@ -54,6 +54,12 @@
     const launcherSide = ds.side || "20px";
     const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
+
+    // const launcherBottomPx = toPxNumber(launcherBottom);
+    // const iframeBottomPx =
+    //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    // Prevent negative if someone sets a tiny launcherBottom
+    //iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
 
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
@@ -91,6 +97,11 @@
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
     iframe.style.bottom = chatWindowBottom;
+
+    // offset so window clears the launcher
+    // const ib =
+    //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    // iframe.style.bottom = Math.max(0, ib) + "px";
 
     document.body.appendChild(iframe);
 
@@ -188,6 +199,15 @@
       } else {
         iframe.style[sideProp] = launcherSide;
         iframe.style.bottom = chatWindowBottom;
+
+        // const ib2 =
+        //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+        // iframe.style.bottom = Math.max(0, ib2) + "px";
+
+        //const launcherBottomPx = toPxNumber(launcherBottom);
+        // const iframeBottomPx =
+        //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+        // iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
         iframe.style.width = Math.min(380, innerWidth) + "px";
         iframe.style.height = Math.min(600, innerHeight) + "px";
       }
