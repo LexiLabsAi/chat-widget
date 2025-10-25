@@ -1,176 +1,3 @@
-//working start
-
-// (() => {
-//   if (window.__LEXI_WIDGET__) return;
-//   window.__LEXI_WIDGET__ = true;
-
-//   function onReady(fn) {
-//     document.readyState !== "loading"
-//       ? fn()
-//       : document.addEventListener("DOMContentLoaded", fn);
-//   }
-
-//   function px(v, fallback) {
-//     if (v == null || v === "") return fallback;
-//     return /^[\d.]+$/.test(String(v)) ? `${v}px` : String(v);
-//   }
-
-//   onReady(() => {
-//     const script = document.currentScript;
-//     const ds = (script && script.dataset) || {};
-
-//     const apiUrl = ds.apiUrl || "";
-//     const companyId = ds.companyId || "";
-//     const theme = (ds.theme || "dark").toLowerCase();
-//     const position = (ds.position || "right").toLowerCase(); // 'left'|'right'
-//     const launcherBottom = px(ds.bottom, "20px"); // optional overrides
-//     const launcherSide = px(ds.side, "20px");
-//     const zIndex = ds.zIndex || "2147483000";
-
-//     if (!companyId) {
-//       console.error("[Lexi] Missing data-company-id on <script>.");
-//     }
-
-//     // --- Robust fallback for iframe URL:
-//     // 1) Prefer data-src (your explicit iframe URL)
-//     // 2) Otherwise, derive "<loader_dir>/index.html" from the loader's own src
-//     const loaderSrc = script?.getAttribute("src") || "";
-//     const defaultBase = new URL("index.html", new URL(loaderSrc, location.href))
-//       .href;
-//     const iframeBase = ds.src || defaultBase; // <-- data-src wins
-
-//     const iframeUrl = appendParams(iframeBase, {
-//       companyId,
-//       apiUrl,
-//       theme,
-//       position,
-//     });
-
-//     console.log("[Lexi] iframeUrl:", iframeUrl);
-
-//     // Iframe (initially hidden)
-//     const iframe = document.createElement("iframe");
-//     iframe.src = iframeUrl;
-//     iframe.allow = "clipboard-write *; autoplay *";
-//     iframe.loading = "eager";
-//     iframe.style.position = "fixed";
-//     iframe.style.border = "0";
-//     iframe.style.width = "0";
-//     iframe.style.height = "0";
-//     iframe.style.opacity = "0";
-//     iframe.style.pointerEvents = "none";
-//     iframe.style.transition = "opacity .2s ease, transform .2s ease";
-//     iframe.style.zIndex = String(parseInt(zIndex) - 1);
-
-//     // Position based on side
-//     const sideProp = position === "left" ? "left" : "right";
-//     iframe.style[sideProp] = launcherSide;
-//     iframe.style.bottom = launcherBottom;
-
-//     document.body.appendChild(iframe);
-
-//     // External launcher button
-//     const btn = document.createElement("button");
-//     btn.setAttribute("aria-label", "Open chat");
-//     btn.innerHTML = "✦";
-//     Object.assign(btn.style, {
-//       position: "fixed",
-//       width: "64px",
-//       height: "64px",
-//       [sideProp]: launcherSide,
-//       bottom: launcherBottom,
-//       borderRadius: "50%",
-//       border: "none",
-//       cursor: "pointer",
-//       display: "grid",
-//       placeItems: "center",
-//       fontSize: "22px",
-//       color: "#fff",
-//       background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
-//       boxShadow: "0 10px 28px rgba(0,0,0,.28)",
-//       backdropFilter: "blur(10px)",
-//       zIndex,
-//       pointerEvents: "auto",
-//     });
-//     document.body.appendChild(btn);
-
-//     let isOpen = false;
-
-//     function open() {
-//       if (isOpen) return;
-//       isOpen = true;
-//       // size iframe like your window
-//       const w = Math.min(380, window.innerWidth);
-//       const h = Math.min(600, window.innerHeight);
-//       iframe.style.width = w + "px";
-//       iframe.style.height = h + "px";
-//       iframe.style.pointerEvents = "auto";
-//       iframe.style.opacity = "1";
-//       // Nudge from bottom-right/left (matches your SCSS)
-//       iframe.style.transform = "translateY(0)";
-//       // Tell child to open its internal state
-//       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
-//       // Subtle launcher tuck
-//       btn.style.transform = "scale(.9)";
-//       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
-//     }
-
-//     function close() {
-//       if (!isOpen) return;
-//       isOpen = false;
-//       iframe.style.pointerEvents = "none";
-//       iframe.style.opacity = "0";
-//       iframe.style.width = "0";
-//       iframe.style.height = "0";
-//       iframe.style.transform = "translateY(6px)";
-//       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
-//       btn.style.transform = "scale(1)";
-//       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
-//     }
-
-//     btn.addEventListener("click", () => {
-//       isOpen ? close() : open();
-//     });
-
-//     // Child → parent events
-//     window.addEventListener("message", (e) => {
-//       const t = e?.data?.type;
-//       if (t === "lexi:open") {
-//         open();
-//       } else if (t === "lexi:close") {
-//         close();
-//       } else if (t === "lexi:resize") {
-//         // Optional: child can ask a resize: {type:'lexi:resize', width, height}
-//         const { width, height } = e.data || {};
-//         if (width && height) {
-//           iframe.style.width = px(width, iframe.style.width);
-//           iframe.style.height = px(height, iframe.style.height);
-//         }
-//       }
-//     });
-
-//     // Mobile: make iframe full screen when open
-//     function handleResize() {
-//       if (!isOpen) return;
-//       const small = window.matchMedia("(max-width: 600px)").matches;
-//       if (small) {
-//         iframe.style.width = "100vw";
-//         iframe.style.height = "100vh";
-//         iframe.style[sideProp] = "0";
-//         iframe.style.bottom = "0";
-//       } else {
-//         iframe.style[sideProp] = launcherSide;
-//         iframe.style.bottom = launcherBottom;
-//         iframe.style.width = Math.min(380, window.innerWidth) + "px";
-//         iframe.style.height = Math.min(600, window.innerHeight) + "px";
-//       }
-//     }
-//     window.addEventListener("resize", handleResize);
-//   });
-// })();
-
-//working end
-
 (() => {
   if (window.__LEXI_WIDGET__) return;
   window.__LEXI_WIDGET__ = true;
@@ -207,9 +34,6 @@
     return u.toString();
   }
 
-  // const sideProp = position === "left" ? "left" : "right";
-  // iframe.style[sideProp] = launcherSide;
-
   onReady(() => {
     // Use the captured reference; do not call document.currentScript here.
     const script = SCRIPT_EL;
@@ -227,12 +51,6 @@
     const launcherSide = ds.side || "20px";
     const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
-
-    // const launcherBottomPx = toPxNumber(launcherBottom);
-    // const iframeBottomPx =
-    //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-    // Prevent negative if someone sets a tiny launcherBottom
-    //iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
 
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
@@ -263,18 +81,36 @@
       width: "0",
       height: "0",
       opacity: "0",
-      pointerEvents: "none",
+      pointerEvents: "none", // not clickable
+      filter: "blur(6px)", // start blurred for a nicer transition (optional)
+      transform: "translateY(16px) scale(0.96)", // start slightly downscaled (optional)
+      transition:
+        "opacity .28s ease, transform .38s cubic-bezier(0.21,1.02,0.35,1), filter .38s cubic-bezier(0.21,1.02,0.35,1), box-shadow .38s cubic-bezier(0.21,1.02,0.35,1)",
       zIndex: String(parseInt(zIndex, 10) - 1),
-      transition: "opacity .2s ease, transform .2s ease",
     });
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
     iframe.style.bottom = chatWindowBottom;
 
-    // offset so window clears the launcher
-    // const ib =
-    //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-    // iframe.style.bottom = Math.max(0, ib) + "px";
+    // 2) helper to SHOW the iframe with the exact styles you asked for
+    function showIframe() {
+      iframe.style.pointerEvents = "auto";
+      iframe.style.opacity = "1";
+      iframe.style.filter = "blur(0)";
+      iframe.style.transform = "translateY(0) scale(1)";
+      iframe.style.boxShadow = "0 18px 48px #00000047";
+    }
+
+    // 3) helper to HIDE the iframe again
+    function hideIframe() {
+      iframe.style.pointerEvents = "none";
+      iframe.style.opacity = "0";
+      iframe.style.filter = "blur(6px)";
+      iframe.style.transform = "translateY(16px) scale(0.96)";
+      iframe.style.boxShadow = "none";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+    }
 
     document.body.appendChild(iframe);
 
@@ -326,28 +162,18 @@
     function open() {
       if (isOpen) return;
       isOpen = true;
-      const w = Math.min(380, window.innerWidth);
-      const h = Math.min(600, window.innerHeight);
-      iframe.style.width = w + "px";
-      iframe.style.height = h + "px";
-      iframe.style.pointerEvents = "auto";
-      iframe.style.opacity = "1";
-      iframe.style.transform = "translateY(0)";
-      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
+      requestAnimationFrame(() => showIframe());
       btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
+      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
     }
     function close() {
       if (!isOpen) return;
       isOpen = false;
-      iframe.style.pointerEvents = "none";
-      iframe.style.opacity = "0";
-      iframe.style.width = "0";
-      iframe.style.height = "0";
-      iframe.style.transform = "translateY(6px)";
-      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
+      hideIframe();
       btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
+      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
     }
     btn.addEventListener("click", () => (isOpen ? close() : open()));
 
@@ -372,15 +198,6 @@
       } else {
         iframe.style[sideProp] = launcherSide;
         iframe.style.bottom = chatWindowBottom;
-
-        // const ib2 =
-        //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-        // iframe.style.bottom = Math.max(0, ib2) + "px";
-
-        //const launcherBottomPx = toPxNumber(launcherBottom);
-        // const iframeBottomPx =
-        //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-        // iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
         iframe.style.width = Math.min(380, innerWidth) + "px";
         iframe.style.height = Math.min(600, innerHeight) + "px";
       }
