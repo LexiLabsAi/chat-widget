@@ -36,6 +36,11 @@
         </div>
       </div>
     </ng-container>
+
+    <div *ngIf="sending()" class="lexi-typing" aria-label="Lexi is typing">
+      <span class="dot"></span><span class="dot"></span
+      ><span class="dot"></span>
+    </div>
   </section>
 
   <footer class="lexi-input">
