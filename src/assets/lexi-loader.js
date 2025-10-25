@@ -52,9 +52,6 @@
     const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
 
-    const sideProp = position === "left" ? "left" : "right";
-    iframe.style[sideProp] = launcherSide;
-
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
 
@@ -90,6 +87,9 @@
     });
 
     iframe.style.bottom = chatWindowBottom;
+
+    const sideProp = position === "left" ? "left" : "right";
+    iframe.style[sideProp] = launcherSide;
 
     document.body.appendChild(iframe);
 
