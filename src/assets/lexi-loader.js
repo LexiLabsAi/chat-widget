@@ -34,6 +34,9 @@
     return u.toString();
   }
 
+  const sideProp = position === "left" ? "left" : "right";
+  iframe.style[sideProp] = launcherSide;
+
   onReady(() => {
     // Use the captured reference; do not call document.currentScript here.
     const script = SCRIPT_EL;
@@ -81,36 +84,13 @@
       width: "0",
       height: "0",
       opacity: "0",
-      pointerEvents: "none", // not clickable
-      filter: "blur(6px)", // start blurred for a nicer transition (optional)
-      transform: "translateY(16px) scale(0.96)", // start slightly downscaled (optional)
-      transition:
-        "opacity .28s ease, transform .38s cubic-bezier(0.21,1.02,0.35,1), filter .38s cubic-bezier(0.21,1.02,0.35,1), box-shadow .38s cubic-bezier(0.21,1.02,0.35,1)",
+      pointerEvents: "none",
       zIndex: String(parseInt(zIndex, 10) - 1),
+      transition: "opacity .2s ease, transform .2s ease",
     });
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
     iframe.style.bottom = chatWindowBottom;
-
-    // 2) helper to SHOW the iframe with the exact styles you asked for
-    function showIframe() {
-      iframe.style.pointerEvents = "auto";
-      iframe.style.opacity = "1";
-      iframe.style.filter = "blur(0)";
-      iframe.style.transform = "translateY(0) scale(1)";
-      iframe.style.boxShadow = "0 18px 48px #00000047";
-    }
-
-    // 3) helper to HIDE the iframe again
-    function hideIframe() {
-      iframe.style.pointerEvents = "none";
-      iframe.style.opacity = "0";
-      iframe.style.filter = "blur(6px)";
-      iframe.style.transform = "translateY(16px) scale(0.96)";
-      iframe.style.boxShadow = "none";
-      iframe.style.width = "0";
-      iframe.style.height = "0";
-    }
 
     document.body.appendChild(iframe);
 
@@ -162,18 +142,28 @@
     function open() {
       if (isOpen) return;
       isOpen = true;
-      requestAnimationFrame(() => showIframe());
+      const w = Math.min(380, window.innerWidth);
+      const h = Math.min(600, window.innerHeight);
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
+      iframe.style.pointerEvents = "auto";
+      iframe.style.opacity = "1";
+      iframe.style.transform = "translateY(0)";
+      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
       btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
-      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
     }
     function close() {
       if (!isOpen) return;
       isOpen = false;
-      hideIframe();
+      iframe.style.pointerEvents = "none";
+      iframe.style.opacity = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.transform = "translateY(6px)";
+      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
       btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
-      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
     }
     btn.addEventListener("click", () => (isOpen ? close() : open()));
 
