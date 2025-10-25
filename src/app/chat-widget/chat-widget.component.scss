@@ -47,7 +47,7 @@ $lexi-muted: #64748b; // slate-500
 
 /* ---------- Chat window — smooth sheet-up animation ---------- */
 :host .lexi-window {
-  position: fixed;
+  // position: fixed;
   bottom: 100px;
   right: 20px;
   width: 380px;
@@ -544,7 +544,7 @@ $lexi-muted: #64748b; // slate-500
 /* Let the base styles control size/position/appearance.
      Do NOT force full-bleed or transparent background. */
 :host([embedded]) .lexi-window {
-  position: fixed !important; /* keep standard floating behavior */
+  // position: fixed !important; /* keep standard floating behavior */
   /* no width/height/inset overrides */
   /* no background override */
   /* no clip-path/opacity/filter overrides */
