@@ -176,25 +176,34 @@
   window.__LEXI_WIDGET__ = true;
 
   // ⚠️ Capture the script element NOW (while this script is executing)
-  const SCRIPT_EL = document.currentScript;
-
-  function toPxNumber(v) {
-    const m = String(v).match(/[\d.]+/);
-    return m ? parseFloat(m[0]) : 0;
-  }
-  const INTERNAL_WINDOW_BOTTOM = 100; // from your CSS: .lexi-window { bottom: 100px; }
-  const BUTTON_SIZE = 64;
-  const GAP = 16;
+  const SCRIPT_EL =
+    document.currentScript ||
+    Array.from(document.getElementsByTagName("script")).find((s) =>
+      (s.getAttribute("src") || "").includes("lexi-loader")
+    );
 
   function onReady(fn) {
     document.readyState !== "loading"
       ? fn()
       : document.addEventListener("DOMContentLoaded", fn);
   }
-  function px(v, fallback) {
+
+  function pxNum(v, fallback = 0) {
     if (v == null || v === "") return fallback;
-    return /^[\d.]+$/.test(String(v)) ? `${v}px` : String(v);
+    const m = String(v).match(/[\d.]+/);
+    return m ? parseFloat(m[0]) : fallback;
   }
+
+  // Tune this if you change CSS:
+  const INTERNAL_WINDOW_BOTTOM = 100; // .lexi-window { bottom: 100px }
+  const BUTTON_SIZE = 64;
+  const GAP = 16;
+
+  // function px(v, fallback) {
+  //   if (v == null || v === "") return fallback;
+  //   return /^[\d.]+$/.test(String(v)) ? `${v}px` : String(v);
+  // }
+
   function appendParams(baseUrl, params) {
     const u = new URL(baseUrl, window.location.href);
     for (const [k, v] of Object.entries(params)) {
@@ -218,17 +227,16 @@
     const apiUrl = ds.apiUrl || "";
     const companyId = ds.companyId || "";
     const theme = (ds.theme || "dark").toLowerCase();
-    const position = (ds.position || "right").toLowerCase();
-    const launcherBottom = px(ds.bottom, "20px");
+    const position = (ds.position || "right").toLowerCase(); // 'right'|'left'
+    const launcherBottom = ds.bottom || "20px";
+    const launcherSide = ds.side || "20px";
+    const zIndex = ds.zIndex || "2147483000";
 
     // const launcherBottomPx = toPxNumber(launcherBottom);
     // const iframeBottomPx =
     //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
     // Prevent negative if someone sets a tiny launcherBottom
     //iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
-
-    const launcherSide = px(ds.side, "20px");
-    const zIndex = ds.zIndex || "2147483000";
 
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
@@ -265,9 +273,16 @@
     });
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
-    iframe.style.bottom = launcherBottom;
+    //iframe.style.bottom = launcherBottom;
+
+    // offset so window clears the launcher
+    const ib =
+      pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    iframe.style.bottom = Math.max(0, ib) + "px";
+
     document.body.appendChild(iframe);
 
+    // Launcher button
     const btn = document.createElement("button");
     btn.setAttribute("aria-label", "Open chat");
     btn.textContent = "✦";
@@ -291,6 +306,25 @@
       pointerEvents: "auto",
     });
     document.body.appendChild(btn);
+
+    // CSP fallback: if inline styles are blocked, drop a visible plain button
+    const computed = getComputedStyle(btn);
+    if (computed.position !== "fixed") {
+      console.warn(
+        "[Lexi] Inline styles blocked by CSP. Using fallback styles."
+      );
+      btn.removeAttribute("style");
+      btn.style.position = "fixed";
+      btn.style.top = "10px";
+      btn.style.left = "10px";
+      btn.style.zIndex = zIndex;
+      btn.style.padding = "10px 14px";
+      btn.style.background = "#7b5cff";
+      btn.style.color = "#fff";
+      btn.style.border = "none";
+      btn.style.borderRadius = "10px";
+      btn.textContent = "Chat";
+    }
 
     let isOpen = false;
     function open() {
@@ -327,8 +361,8 @@
       else if (t === "lexi:close") close();
       else if (t === "lexi:resize") {
         const { width, height } = e.data || {};
-        if (width) iframe.style.width = px(width, iframe.style.width);
-        if (height) iframe.style.height = px(height, iframe.style.height);
+        if (width) iframe.style.width = pxNum(width, iframe.style.width);
+        if (height) iframe.style.height = pxNum(height, iframe.style.height);
       }
     });
 
@@ -341,7 +375,12 @@
         iframe.style.bottom = "0";
       } else {
         iframe.style[sideProp] = launcherSide;
-        iframe.style.bottom = launcherBottom;
+        //iframe.style.bottom = launcherBottom;
+
+        const ib2 =
+          pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+        iframe.style.bottom = Math.max(0, ib2) + "px";
+
         //const launcherBottomPx = toPxNumber(launcherBottom);
         // const iframeBottomPx =
         //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
