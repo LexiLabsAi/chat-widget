@@ -260,6 +260,8 @@
     // ----- CHAT IFRAME (opens at 100px = 20 + 64 + 16) -----
     const chatBottom = bottomPx + CLOSED_H + 16; // <<< 100 when bottom=20, closedH=64
     const iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+
     iframe.src = url.toString();
     iframe.title = ds.title || "Lexi Chat";
     iframe.allow = "clipboard-read; clipboard-write; microphone *";
@@ -284,7 +286,6 @@
       transition:transform .38s cubic-bezier(.21,1.02,.35,1), opacity .28s ease-out;
       will-change:transform,opacity;
     `;
-    document.body.appendChild(iframe);
 
     let open = false;
     const doOpen = () => {
