@@ -33,6 +33,16 @@
             <span class="lexi-time">{{ formatTime(m, m.timestamp) }}</span>
           </div>
           <div class="lexi-bubble">{{ m.text }}</div>
+          <!-- Suggestions right after the first (welcome) message -->
+          <div *ngIf="i === 0 && showSuggestions()" class="lexi-suggestions">
+            <button
+              *ngFor="let option of activeSuggestions"
+              class="lexi-chip"
+              (click)="sendSuggestion(option)"
+            >
+              {{ option }}
+            </button>
+          </div>
         </div>
       </div>
     </ng-container>
@@ -59,7 +69,22 @@
         (click)="send()"
         aria-label="Send"
       >
-        ➤
+        <!-- ➤ -->
+        <!-- Modern send icon -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+        >
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
       </button>
     </div>
   </footer>
