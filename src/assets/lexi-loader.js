@@ -34,9 +34,6 @@
     return u.toString();
   }
 
-  const sideProp = position === "left" ? "left" : "right";
-  iframe.style[sideProp] = launcherSide;
-
   onReady(() => {
     // Use the captured reference; do not call document.currentScript here.
     const script = SCRIPT_EL;
@@ -54,6 +51,9 @@
     const launcherSide = ds.side || "20px";
     const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
+
+    const sideProp = position === "left" ? "left" : "right";
+    iframe.style[sideProp] = launcherSide;
 
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
@@ -147,7 +147,9 @@
       iframe.style.height = h + "px";
       iframe.style.pointerEvents = "auto";
       iframe.style.opacity = "1";
-      iframe.style.transform = "translateY(0)";
+      iframe.style.filter = "blur(0)";
+      iframe.style.transform = "translateY(0) scale(1)";
+      iframe.style.boxShadow = "0 18px 48px #00000047";
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
       btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
@@ -159,7 +161,9 @@
       iframe.style.opacity = "0";
       iframe.style.width = "0";
       iframe.style.height = "0";
-      iframe.style.transform = "translateY(6px)";
+      iframe.style.filter = "blur(6px)";
+      iframe.style.transform = "translateY(16px) scale(0.96)";
+      iframe.style.boxShadow = "none";
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
       btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
