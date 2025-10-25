@@ -230,6 +230,7 @@
     const position = (ds.position || "right").toLowerCase(); // 'right'|'left'
     const launcherBottom = ds.bottom || "20px";
     const launcherSide = ds.side || "20px";
+    const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
 
     // const launcherBottomPx = toPxNumber(launcherBottom);
@@ -273,12 +274,12 @@
     });
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
-    //iframe.style.bottom = launcherBottom;
+    iframe.style.bottom = chatWindowBottom;
 
     // offset so window clears the launcher
-    const ib =
-      pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-    iframe.style.bottom = Math.max(0, ib) + "px";
+    // const ib =
+    //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    // iframe.style.bottom = Math.max(0, ib) + "px";
 
     document.body.appendChild(iframe);
 
@@ -375,11 +376,11 @@
         iframe.style.bottom = "0";
       } else {
         iframe.style[sideProp] = launcherSide;
-        //iframe.style.bottom = launcherBottom;
+        iframe.style.bottom = chatWindowBottom;
 
-        const ib2 =
-          pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-        iframe.style.bottom = Math.max(0, ib2) + "px";
+        // const ib2 =
+        //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+        // iframe.style.bottom = Math.max(0, ib2) + "px";
 
         //const launcherBottomPx = toPxNumber(launcherBottom);
         // const iframeBottomPx =
