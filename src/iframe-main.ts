@@ -25,6 +25,11 @@ bootstrapApplication(ChatWidgetComponent, {
     if (readParam('embedded')) host.setAttribute('embedded', '1');
   }
 
+  document.addEventListener('DOMContentLoaded', () => {
+    const launcher = document.querySelector('.lexi-launcher');
+    if (launcher) launcher.remove(); // safety: kill internal launcher if any slipped through
+  });
+
   // Tell parent we’re alive
   window.parent?.postMessage({ type: 'lexi:ready' }, '*');
 });

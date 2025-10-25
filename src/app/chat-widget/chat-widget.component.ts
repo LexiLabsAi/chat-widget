@@ -48,7 +48,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   }
 
   // NEW: automatically mark when running inside an iframe
-  private readonly inIframe = (() => {
+  public readonly inIframe = (() => {
     try {
       return window.self !== window.top;
     } catch {
@@ -56,21 +56,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
     }
   })();
   @HostBinding('attr.embedded') get embeddedAttr() {
-    return this.inIframe ? '1' : null;
-  }
-
-  private setEmbeddedAttrIfIframe() {
-    let isIframe = true;
-    try {
-      isIframe = window.self !== window.top;
-    } catch {
-      isIframe = true;
-    }
-    if (isIframe) {
-      this.host.nativeElement.setAttribute('embedded', '1');
-    } else {
-      this.host.nativeElement.removeAttribute('embedded');
-    }
+    return this.inIframe ? '' : null;
   }
 
   @ViewChild(LoadingAnimationComponent) loader?: LoadingAnimationComponent;
@@ -111,7 +97,6 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   messages = signal<any[]>([]);
 
   ngOnInit(): void {
-    this.setEmbeddedAttrIfIframe();
     this._signalrChatService.messages$.subscribe((msgs) => {
       console.log(msgs);
       if (msgs && msgs.length > this.lastCount) {
@@ -161,7 +146,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.setEmbeddedAttrIfIframe();
+    if (this.inIframe) {
+      const sr = this.host.nativeElement.shadowRoot;
+      const btn = sr?.querySelector('.lexi-launcher') as HTMLElement | null;
+      if (btn) btn.remove(); // hard kill if it slipped through
+    }
     // Wait a short tick to ensure Inputs are bound from iframe params
     setTimeout(() => {
       const params = new URLSearchParams(window.location.search);

@@ -1,5 +1,6 @@
 <!-- Floating Launcher -->
 <button
+  *ngIf="!inIframe"
   class="lexi-launcher"
   (click)="toggle()"
   [class.active]="open()"
