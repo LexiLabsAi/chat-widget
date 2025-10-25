@@ -146,6 +146,18 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    window.addEventListener('message', (e: MessageEvent) => {
+      // TODO: if you want stricter security, check e.origin against your allowlist
+      const t = (e.data && (e.data.type as string)) || '';
+      if (t === 'lexi:open') {
+        if (!this.open()) this.toggle();
+      } else if (t === 'lexi:close') {
+        if (this.open()) this.toggle();
+      } else if (t === 'lexi:toggle') {
+        this.toggle();
+      }
+    });
+
     if (this.inIframe) {
       const sr = this.host.nativeElement.shadowRoot;
       const btn = sr?.querySelector('.lexi-launcher') as HTMLElement | null;
@@ -304,7 +316,6 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   }
 
   formatTime(m: any, ts?: string): string {
-    console.log(ts);
     if (!ts) return '';
     const d = new Date(ts);
     return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

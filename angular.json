@@ -37,7 +37,7 @@
               "outputHashing": "all",
               "index": "src/iframe-index.html",
               "main": "src/iframe-main.ts",
-              "polyfills": [],
+              "polyfills": ["zone.js"],
               "assets": ["src/assets"],
               "optimization": true,
               "budgets": [

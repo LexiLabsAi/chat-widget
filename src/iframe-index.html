@@ -1,24 +1,38 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lexi Chat Widget</title>
-    <!-- System font stack = bulletproof (no external font fetches) -->
+     System font stack = bulletproof (no external font fetches) 
     <style>
       html,
       body {
         margin: 0;
-        height: 100%;
         background: transparent;
       }
     </style>
   </head>
   <body>
-    <!-- Your component renders here (Shadow DOM, isolated) -->
     <lexi-chat-widget-internal></lexi-chat-widget-internal>
 
-    <!-- Angular build emits main.js (no hash for this config) -->
     <script src="main.js" defer></script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Lexi Widget</title>
+    <base href="/" />
+    <!-- Keep fonts local or skip; avoid cross-site layout flashes -->
+  </head>
+  <body style="margin: 0">
+    <!-- We render the component to body; it will fill the iframe in embedded mode -->
   </body>
 </html>
