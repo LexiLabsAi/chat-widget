@@ -203,8 +203,8 @@
     return u.toString();
   }
 
-  const sideProp = position === "left" ? "left" : "right";
-  iframe.style[sideProp] = launcherSide;
+  // const sideProp = position === "left" ? "left" : "right";
+  // iframe.style[sideProp] = launcherSide;
 
   onReady(() => {
     // Use the captured reference; do not call document.currentScript here.
@@ -219,13 +219,13 @@
     const companyId = ds.companyId || "";
     const theme = (ds.theme || "dark").toLowerCase();
     const position = (ds.position || "right").toLowerCase();
-    // const launcherBottom = px(ds.bottom, "20px");
+    const launcherBottom = px(ds.bottom, "20px");
 
-    const launcherBottomPx = toPxNumber(launcherBottom);
-    const iframeBottomPx =
-      launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    // const launcherBottomPx = toPxNumber(launcherBottom);
+    // const iframeBottomPx =
+    //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
     // Prevent negative if someone sets a tiny launcherBottom
-    iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
+    //iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
 
     const launcherSide = px(ds.side, "20px");
     const zIndex = ds.zIndex || "2147483000";
@@ -341,10 +341,11 @@
         iframe.style.bottom = "0";
       } else {
         iframe.style[sideProp] = launcherSide;
-        const launcherBottomPx = toPxNumber(launcherBottom);
-        const iframeBottomPx =
-          launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
-        iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
+        iframe.style.bottom = launcherBottom;
+        //const launcherBottomPx = toPxNumber(launcherBottom);
+        // const iframeBottomPx =
+        //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+        // iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
         iframe.style.width = Math.min(380, innerWidth) + "px";
         iframe.style.height = Math.min(600, innerHeight) + "px";
       }
