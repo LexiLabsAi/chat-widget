@@ -94,8 +94,7 @@
       zIndex: String(parseInt(zIndex, 10) - 1),
       transition: "opacity .2s ease, transform .2s ease",
     });
-    const sideProp = position === "left" ? "left" : "right";
-    iframe.style[sideProp] = launcherSide;
+
     iframe.style.bottom = chatWindowBottom;
 
     // offset so window clears the launcher
