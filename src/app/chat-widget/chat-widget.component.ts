@@ -111,6 +111,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
         ]);
         this.lastCount = msgs.length;
         this.sending.set(false);
+        this.focusInput();
       }
     });
 
