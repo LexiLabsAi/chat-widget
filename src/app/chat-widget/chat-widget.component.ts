@@ -273,23 +273,23 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
       this._signalrChatService.sendMessage(chatmsg);
       this.newMessage = '';
     }
-    // try {
-    //   const reply = await this.chat.ask(value);
-    //   await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
-    //   this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
-    //   this.scrollToBottom();
-    // } catch {
-    //   this.messages.update((m) => [
-    //     ...m,
-    //     {
-    //       role: 'assistant',
-    //       text: 'Sorry—something went wrong. Please try again.',
-    //     },
-    //   ]);
-    // } finally {
-    //   this.sending.set(false);
-    //   setTimeout(() => this.focusInput());
-    // }
+    try {
+      const reply = await this.chat.ask(value);
+      await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
+      this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
+      this.scrollToBottom();
+    } catch {
+      this.messages.update((m) => [
+        ...m,
+        {
+          role: 'assistant',
+          text: 'Sorry—something went wrong. Please try again.',
+        },
+      ]);
+    } finally {
+      this.sending.set(false);
+      setTimeout(() => this.focusInput());
+    }
   }
 
   get activeSuggestions(): string[] {
