@@ -228,19 +228,11 @@
     const chatWindowBottom = ds.chatWindowBottom || "100px";
     const zIndex = ds.zIndex || "2147483000";
 
-    // place iframe so the chat window clears the launcher
-    const iframeBottomPx =
-      pxNum(launcherBottom) + BUTTON_SIZE + GAP - pxNum(chatWindowBottom);
-    iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
-
-    // IMPORTANT: size iframe tall enough for the chat window + its bottom offset
-    const CHAT_WINDOW_HEIGHT = 600; // your .lexi-window height
-    function setIframeSizeDesktop() {
-      const width = Math.min(380, window.innerWidth);
-      const height = CHAT_WINDOW_HEIGHT + pxNum(chatWindowBottom);
-      iframe.style.width = width + "px";
-      iframe.style.height = height + "px";
-    }
+    // const launcherBottomPx = toPxNumber(launcherBottom);
+    // const iframeBottomPx =
+    //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
+    // Prevent negative if someone sets a tiny launcherBottom
+    //iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
 
     if (!companyId)
       console.error("[Lexi] Missing data-company-id on <script>.");
@@ -334,11 +326,10 @@
     function open() {
       if (isOpen) return;
       isOpen = true;
-      // const w = Math.min(380, window.innerWidth);
-      // const h = Math.min(600, window.innerHeight);
-      // iframe.style.width = w + "px";
-      // iframe.style.height = h + "px";
-      setIframeSizeDesktop();
+      const w = Math.min(380, window.innerWidth);
+      const h = Math.min(600, window.innerHeight);
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
       iframe.style.pointerEvents = "auto";
       iframe.style.opacity = "1";
       iframe.style.transform = "translateY(0)";
@@ -380,13 +371,7 @@
         iframe.style.bottom = "0";
       } else {
         iframe.style[sideProp] = launcherSide;
-
-        const ib =
-          pxNum(launcherBottom) + BUTTON_SIZE + GAP - pxNum(chatWindowBottom);
-        iframe.style.bottom = Math.max(0, ib) + "px";
-        setIframeSizeDesktop();
-
-        // iframe.style.bottom = chatWindowBottom;
+        iframe.style.bottom = chatWindowBottom;
 
         // const ib2 =
         //   pxNum(launcherBottom) + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
@@ -396,8 +381,8 @@
         // const iframeBottomPx =
         //  launcherBottomPx + BUTTON_SIZE + GAP - INTERNAL_WINDOW_BOTTOM;
         // iframe.style.bottom = Math.max(0, iframeBottomPx) + "px";
-        // iframe.style.width = Math.min(380, innerWidth) + "px";
-        // iframe.style.height = Math.min(600, innerHeight) + "px";
+        iframe.style.width = Math.min(380, innerWidth) + "px";
+        iframe.style.height = Math.min(600, innerHeight) + "px";
       }
     }
     window.addEventListener("resize", handleResize);
