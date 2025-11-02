@@ -33,11 +33,14 @@ export class SignalRChatService {
 
   constructor() {}
 
-  connect(token: string) {
+  connect(token: string, chatSettingsId: string) {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.BASE_SIGNALR_URL}/widgethub`, {
-        accessTokenFactory: () => token,
-      })
+      .withUrl(
+        `${environment.BASE_SIGNALR_URL}/widgethub?chatSettingsId=${chatSettingsId}`,
+        {
+          accessTokenFactory: () => token,
+        }
+      )
       .withAutomaticReconnect()
       .build();
 
@@ -59,17 +62,11 @@ export class SignalRChatService {
       this.presenceSource.next(presence);
     });
 
-    this.hubConnection.on('TypingUpdated', (dto: TypingDto) => {
-      console.log('Typing:', dto);
-    });
+    this.hubConnection.on('TypingUpdated', (dto: TypingDto) => {});
 
     this.hubConnection.on(
       'Ack',
       (action: string, data: any, success: boolean, error: string) => {
-        console.log(
-          `Ack for ${action}: ${success ? '✅' : '❌'} ${error || ''}`
-        );
-
         if (action === 'SendMessage' && success && data) {
           // The server sent back the full ChatMessageDto with timestamp
           const msg = data as ChatMessageDto;
@@ -95,7 +92,6 @@ export class SignalRChatService {
 
   // === HUB METHODS ===
   sendMessage(msg: ChatMessageDto) {
-    console.log(this.context);
     const newMsg = {
       messageId: crypto.randomUUID(),
       tenantId: this.context.tenantId ?? '',
@@ -104,7 +100,6 @@ export class SignalRChatService {
       text: msg.text,
     };
 
-    console.log(newMsg);
     return this.hubConnection?.invoke('SendMessage', newMsg);
   }
 

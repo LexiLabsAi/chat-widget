@@ -113,7 +113,6 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.setEmbeddedAttrIfIframe();
     this._signalrChatService.messages$.subscribe((msgs) => {
-      console.log(msgs);
       if (msgs && msgs.length > this.lastCount) {
         const newOnes = msgs.slice(this.lastCount);
         this.messages.update((m) => [
@@ -173,7 +172,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
         this.apiUrl = params.get('apiUrl') || '';
       }
 
-      const origin = window.location.origin;
+      const origin =
+        window.location !== window.parent.location
+          ? new URL(document.referrer).origin // inside iframe → parent origin
+          : window.location.origin;
+
       this.tenantId = this.companyId?.trim();
 
       if (!this.tenantId) {
@@ -187,9 +190,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
         next: (res) => {
           this.token = res.token;
           console.log('🎫 Widget token issued');
-          this._signalrChatService.connect(this.token).then(() => {
-            this._signalrChatService.startConversation();
-          });
+          this._signalrChatService
+            .connect(this.token, this.tenantId)
+            .then(() => {
+              this._signalrChatService.startConversation();
+            });
         },
         error: (err) => {
           console.error('Error issuing widget token:', err);
@@ -315,7 +320,6 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
   }
 
   formatTime(m: any, ts?: string): string {
-    console.log(ts);
     if (!ts) return '';
     const d = new Date(ts);
     return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
