@@ -9,6 +9,7 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +35,7 @@ type ChatMsgWithTs = ChatMessage & { ts?: number };
   styleUrls: ['./chat-widget.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class ChatWidgetComponent implements OnInit, AfterViewInit {
+export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() apiUrl = '';
   @Input() companyId = '';
   @Input() theme: 'dark' | 'light' = 'dark';
@@ -80,6 +81,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
 
   open = signal(false);
   sending = signal(false);
+  ended = signal(false);
   // renamed from `input` to avoid clashes with the template ref
   text = signal('');
 
@@ -110,8 +112,44 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
 
   messages = signal<any[]>([]);
 
+  private isConnected = false;
+
+  private connecting = false;
+
+  connectionState = signal<'connecting' | 'connected' | 'error'>('connecting');
+
+  ngOnDestroy(): void {
+    this._signalrChatService.disconnect();
+  }
+
   ngOnInit(): void {
     this.setEmbeddedAttrIfIframe();
+
+    // 👇 Reset typing if connection drops or reconnects
+    window.addEventListener('lexi:typing-reset', () => {
+      console.log('🧹 Resetting typing indicator');
+      this.sending.set(false);
+    });
+
+    this._signalrChatService.connectionState$.subscribe((state) => {
+      switch (state) {
+        case 'connecting':
+        case 'reconnecting':
+          this.connectionState.set('connecting');
+          break;
+        case 'connected':
+          this.connectionState.set('connected');
+          break;
+        case 'disconnected':
+          this.ended.set(true);
+          setTimeout(() => this.scrollToBottom(), 50);
+          break;
+        case 'error':
+          this.connectionState.set('error');
+          break;
+      }
+    });
+
     this._signalrChatService.messages$.subscribe((msgs) => {
       if (msgs && msgs.length > this.lastCount) {
         const newOnes = msgs.slice(this.lastCount);
@@ -125,6 +163,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
         ]);
         this.lastCount = msgs.length;
         this.sending.set(false);
+
+        setTimeout(() => {
+          this.scrollToBottom();
+          this.focusInput();
+        }, 50);
       }
     });
 
@@ -186,20 +229,20 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
 
       console.log(`🏷 Using Tenant: ${this.tenantId}, Origin: ${origin}`);
 
-      this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
-        next: (res) => {
-          this.token = res.token;
-          console.log('🎫 Widget token issued');
-          this._signalrChatService
-            .connect(this.token, this.tenantId)
-            .then(() => {
-              this._signalrChatService.startConversation();
-            });
-        },
-        error: (err) => {
-          console.error('Error issuing widget token:', err);
-        },
-      });
+      // this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
+      //   next: (res) => {
+      //     this.token = res.token;
+      //     console.log('🎫 Widget token issued');
+      //     this._signalrChatService
+      //       .connect(this.token, this.tenantId)
+      //       .then(() => {
+      //         this._signalrChatService.startConversation();
+      //       });
+      //   },
+      //   error: (err) => {
+      //     console.error('Error issuing widget token:', err);
+      //   },
+      // });
     }, 0);
   }
 
@@ -248,6 +291,10 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
       if (!this.chat.hasLoadedContext()) {
         this.chat.loadContext().catch(() => {});
       }
+
+      // ⬇️ connect only when opened
+      this.connectIfNeeded();
+
       setTimeout(() => {
         this.scrollToBottom();
         this.focusInput();
@@ -255,9 +302,29 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
     } else {
       this.loader?.backToIdle();
     }
+
+    // if (opening) {
+    //   this.loader?.startOpenSequence();
+    //   if (!this.chat.hasLoadedContext()) {
+    //     this.chat.loadContext().catch(() => {});
+    //   }
+    //   setTimeout(() => {
+    //     this.scrollToBottom();
+    //     this.focusInput();
+    //   });
+    // } else {
+    // this.loader?.backToIdle();
+    //}
   }
 
   async send() {
+    if (this.ended()) {
+      console.log('💬 Chat ended — starting a new conversation...');
+      this.ended.set(false);
+      this._signalrChatService.startConversation();
+      return;
+    }
+
     const value = this.text().trim();
     if (!value) return;
 
@@ -277,23 +344,6 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
       this._signalrChatService.sendMessage(chatmsg);
       this.newMessage = '';
     }
-    // try {
-    //   const reply = await this.chat.ask(value);
-    //   await new Promise((r) => setTimeout(r, 1500)); // ← one-liner: keep bubbles visible longer
-    //   this.messages.update((m) => [...m, { role: 'assistant', text: reply }]);
-    //   this.scrollToBottom();
-    // } catch {
-    //   this.messages.update((m) => [
-    //     ...m,
-    //     {
-    //       role: 'assistant',
-    //       text: 'Sorry—something went wrong. Please try again.',
-    //     },
-    //   ]);
-    // } finally {
-    //   this.sending.set(false);
-    //   setTimeout(() => this.focusInput());
-    // }
   }
 
   get activeSuggestions(): string[] {
@@ -338,5 +388,48 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit {
             year: 'numeric',
           });
     return `${day}, ${this.formatTime(this.messages()[0], first)}`;
+  }
+
+  private async connectIfNeeded(): Promise<void> {
+    if (this.isConnected || this.connecting) {
+      return;
+    }
+
+    console.log(this.tenantId);
+    console.log(this.apiUrl);
+    if (!this.tenantId || !this.apiUrl) {
+      console.log('Missing tenantId or apiUrl');
+      return;
+    }
+
+    this.connecting = true;
+    console.log('Connecting to chat hub...');
+
+    const origin =
+      window.location !== window.parent.location
+        ? new URL(document.referrer).origin
+        : window.location.origin;
+
+    this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
+      next: (res) => {
+        this.token = res.token;
+        console.log('Widget token issued');
+
+        this._signalrChatService
+          .connect(this.token!, this.companyId)
+          .then(() => {
+            this.connectionState.set('connected');
+            this._signalrChatService.startConversation();
+          })
+          .catch((err) => {
+            console.error('Hub connection failed:', err);
+            this.connectionState.set('error');
+          });
+      },
+      error: (err) => {
+        console.error('Error issuing widget token: ', err);
+        this.connectionState.set('error');
+      },
+    });
   }
 }
