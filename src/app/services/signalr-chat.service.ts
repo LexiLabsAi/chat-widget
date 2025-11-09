@@ -12,6 +12,10 @@ import { environment } from '../environments/environment';
 export class SignalRChatService {
   private hubConnection?: signalR.HubConnection;
 
+  connectionState$ = new BehaviorSubject<
+    'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'
+  >('connecting');
+
   // store context for later sends
   private context: {
     tenantId?: string;
@@ -33,18 +37,61 @@ export class SignalRChatService {
 
   constructor() {}
 
-  connect(token: string) {
+  connect(token: string, chatSettingsId: string) {
+    console.log('signalr url: ' + environment.BASE_SIGNALR_URL);
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.BASE_SIGNALR_URL}/widgethub`, {
-        accessTokenFactory: () => token,
-      })
-      .withAutomaticReconnect()
+      .withUrl(
+        `${environment.BASE_SIGNALR_URL}/widgethub?chatSettingsId=${chatSettingsId}`,
+        {
+          accessTokenFactory: () => token,
+        }
+      )
+      .withAutomaticReconnect() // retry automatically
       .build();
 
-    return this.hubConnection.start().then(() => {
-      console.log('✅ Hub connected');
-      this.registerHandlers();
+    // 🟡 Connection lifecycle handlers (place them right here)
+    this.hubConnection.onreconnecting((error) => {
+      console.warn('🔄 Reconnecting...', error);
+      this.connectionState$.next('reconnecting');
+
+      // 👉 reset typing again just to be safe
+      window.dispatchEvent(new CustomEvent('lexi:typing-reset'));
     });
+
+    this.hubConnection.onreconnected((connectionId) => {
+      console.log('✅ Reconnected, new connectionId:', connectionId);
+      this.connectionState$.next('connected');
+
+      // 👉 reset typing again just to be safe
+      window.dispatchEvent(new CustomEvent('lexi:typing-reset'));
+
+      // Rejoin existing conversation group if one exists
+      if (this.context.tenantId && this.context.conversationId) {
+        this.join(this.context.tenantId, this.context.conversationId)
+          ?.then(() => console.log('🔁 Rejoined conversation after reconnect'))
+          .catch((err) => console.error('Failed to rejoin conversation:', err));
+      }
+    });
+
+    this.hubConnection.onclose((error) => {
+      console.warn('❌ Disconnected from SignalR', error);
+      this.connectionState$.next('disconnected');
+    });
+
+    // 🟢 Start connection and register handlers after it's connected
+    this.connectionState$.next('connecting');
+
+    return this.hubConnection
+      .start()
+      .then(() => {
+        console.log('✅ Hub connected');
+        this.connectionState$.next('connected');
+        this.registerHandlers();
+      })
+      .catch((err) => {
+        console.error('💥 Connection failed:', err);
+        this.connectionState$.next('error');
+      });
   }
 
   private registerHandlers() {
@@ -53,23 +100,24 @@ export class SignalRChatService {
     this.hubConnection.on('MessageReceived', (msg: ChatMessageDto) => {
       const current = this.messagesSource.value;
       this.messagesSource.next([...current, msg]);
+
+      // if conversationComplete flag is present
+      if (msg.metadata && msg.metadata['conversationComplete'] === 'true') {
+        console.log('👋 Conversation marked complete by server');
+        this.connectionState$.next('disconnected'); // intentionally end chat
+        this.hubConnection?.stop(); // optional
+      }
     });
 
     this.hubConnection.on('PresenceUpdated', (presence: PresenceDto) => {
       this.presenceSource.next(presence);
     });
 
-    this.hubConnection.on('TypingUpdated', (dto: TypingDto) => {
-      console.log('Typing:', dto);
-    });
+    this.hubConnection.on('TypingUpdated', (dto: TypingDto) => {});
 
     this.hubConnection.on(
       'Ack',
       (action: string, data: any, success: boolean, error: string) => {
-        console.log(
-          `Ack for ${action}: ${success ? '✅' : '❌'} ${error || ''}`
-        );
-
         if (action === 'SendMessage' && success && data) {
           // The server sent back the full ChatMessageDto with timestamp
           const msg = data as ChatMessageDto;
@@ -91,11 +139,36 @@ export class SignalRChatService {
         this.conversationStartedSource.next(req);
       }
     );
+
+    this.hubConnection.on(
+      'ConversationEnded',
+      (conversationId: string, closingText: string) => {
+        console.log('👋 Conversation ended:', conversationId, closingText);
+
+        // Push Lexi's closing message to the message stream
+        const closingMsg: ChatMessageDto = {
+          messageId: '-1',
+          tenantId: this.context.tenantId ?? '',
+          conversationId,
+          senderId: 'ai-bot',
+          text: closingText,
+          timestamp: new Date().toISOString(),
+        };
+
+        const current = this.messagesSource.value;
+        this.messagesSource.next([...current, closingMsg]);
+
+        // End connection gracefully after a short delay
+        setTimeout(() => {
+          this.connectionState$.next('disconnected');
+          this.hubConnection?.stop();
+        }, 2000);
+      }
+    );
   }
 
   // === HUB METHODS ===
   sendMessage(msg: ChatMessageDto) {
-    console.log(this.context);
     const newMsg = {
       messageId: crypto.randomUUID(),
       tenantId: this.context.tenantId ?? '',
@@ -104,7 +177,6 @@ export class SignalRChatService {
       text: msg.text,
     };
 
-    console.log(newMsg);
     return this.hubConnection?.invoke('SendMessage', newMsg);
   }
 
@@ -118,5 +190,12 @@ export class SignalRChatService {
 
   startConversation() {
     return this.hubConnection?.invoke('StartConversation');
+  }
+
+  disconnect() {
+    this.hubConnection
+      ?.stop()
+      .catch((err) => console.error('Hub stop failed', err));
+    this.connectionState$.next('disconnected');
   }
 }

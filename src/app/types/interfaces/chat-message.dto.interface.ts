@@ -5,4 +5,5 @@ export interface ChatMessageDto {
   senderId: string;
   text: string;
   timestamp?: string;
+  metadata?: { [key: string]: string };
 }

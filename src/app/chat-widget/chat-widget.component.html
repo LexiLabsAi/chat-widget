@@ -19,6 +19,17 @@
   </header>
 
   <section class="lexi-body" role="log" aria-live="polite" #log>
+    <!-- CONNECTING OVERLAY -->
+    <div class="lexi-connecting" *ngIf="connectionState() === 'connecting'">
+      <div class="spinner"></div>
+      <div class="msg">Connecting to Lexi…</div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="lexi-connecting error" *ngIf="connectionState() === 'error'">
+      <div class="msg">Connection failed. Please refresh.</div>
+    </div>
+    <!-- Day / time chip at top -->
     <div class="lexi-daystamp">{{ formatDaystamp() }}</div>
     <ng-container *ngFor="let m of messages(); let i = index">
       <div class="lexi-msg" [class.user]="m.role === 'user'">
@@ -46,7 +57,9 @@
         </div>
       </div>
     </ng-container>
-
+    <div class="lexi-ended" *ngIf="ended()">
+      <p>Lexi has left the chat. Please refresh page to continue.</p>
+    </div>
     <div *ngIf="sending()" class="lexi-typing" aria-label="Lexi is typing">
       <span class="dot"></span><span class="dot"></span
       ><span class="dot"></span>
@@ -58,14 +71,14 @@
       <textarea
         #input
         placeholder="Type here..."
-        [disabled]="sending()"
+        [disabled]="sending() || connectionState() !== 'connected' || ended()"
         (keydown)="keydown($event)"
         [ngModel]="text()"
         (ngModelChange)="text.set($event)"
       ></textarea>
       <button
         class="lexi-send"
-        [disabled]="sending()"
+        [disabled]="sending() || connectionState() !== 'connected' || ended()"
         (click)="send()"
         aria-label="Send"
       >
