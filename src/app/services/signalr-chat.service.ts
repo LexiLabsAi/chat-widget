@@ -38,6 +38,7 @@ export class SignalRChatService {
   constructor() {}
 
   connect(token: string, chatSettingsId: string) {
+    console.log('signalr url: ' + environment.BASE_SIGNALR_URL);
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(
         `${environment.BASE_SIGNALR_URL}/widgethub?chatSettingsId=${chatSettingsId}`,
