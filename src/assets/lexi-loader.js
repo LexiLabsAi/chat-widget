@@ -1,119 +1,13 @@
-// (() => {
-//   if (window.__LEXI_WIDGET__) return; // avoid double insert
-//   window.__LEXI_WIDGET__ = true;
-
-//   function onReady(fn) {
-//     document.readyState !== "loading"
-//       ? fn()
-//       : document.addEventListener("DOMContentLoaded", fn);
-//   }
-
-//   onReady(() => {
-//     const s = document.currentScript;
-//     const ds = (s && s.dataset) || {};
-//     const src =
-//       ds.src ||
-//       ds["src"] ||
-//       ds["data-src"] ||
-//       "https://cdn.yourdomain.com/widget/index.html";
-
-//     const url = new URL(src);
-//     if (ds.apiUrl) url.searchParams.set("apiUrl", ds.apiUrl);
-//     if (ds.companyId) url.searchParams.set("companyId", ds.companyId);
-
-//     url.searchParams.set("theme", ds.theme || "dark");
-//     url.searchParams.set("position", ds.position || "right");
-
-//     const iframe = document.createElement("iframe");
-//     iframe.src = url.toString();
-//     iframe.title = ds.title || "Lexi Chat";
-//     iframe.setAttribute("aria-label", "Lexi Chat");
-//     iframe.allow = "clipboard-read; clipboard-write; microphone *";
-//     iframe.sandbox = [
-//       "allow-scripts",
-//       "allow-same-origin",
-//       "allow-forms",
-//       "allow-popups",
-//       "allow-downloads",
-//       "allow-modals",
-//       "allow-popups-to-escape-sandbox",
-//     ].join(" ");
-
-//     // ✅ Launcher-style defaults
-//     iframe.style.position = "fixed";
-//     iframe.style.bottom = "20px";
-//     const position = ds.position || "right";
-//     iframe.style[position] = "20px";
-//     iframe.style.width = "64px";
-//     iframe.style.height = "64px";
-//     iframe.style.border = "none";
-//     iframe.style.borderRadius = "50%";
-//     iframe.style.overflow = "hidden";
-//     iframe.style.background = "transparent";
-//     iframe.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.25)";
-//     iframe.style.transition = "all 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
-//     iframe.style.zIndex = "2147483647"; // Highest possible
-//     iframe.style.willChange = "width, height, transform";
-
-//     document.body.appendChild(iframe);
-
-//     const OPEN_W = Number(ds.width || 380);
-//     const OPEN_H = Number(ds.height || 600);
-
-//     const setSize = (w, h, r = "16px") => {
-//       iframe.style.width = w + "px";
-//       iframe.style.height = h + "px";
-//       iframe.style.borderRadius = r;
-//     };
-
-//     const origin = (() => {
-//       try {
-//         return new URL(iframe.src).origin;
-//       } catch {
-//         return "*";
-//       }
-//     })();
-
-//     // ✅ Handle messages from inside the iframe
-//     window.addEventListener("message", (ev) => {
-//       if (ev.source !== iframe.contentWindow) return;
-//       if (origin !== "*" && ev.origin !== origin) return;
-//       const msg = ev.data || {};
-
-//       if (msg.type === "lexi:open") {
-//         setSize(OPEN_W, OPEN_H, "16px");
-//         iframe.style.boxShadow = "0 18px 48px rgba(0,0,0,0.35)";
-//         iframe.animate(
-//           [
-//             { transform: "scale(0.85)", opacity: 0.8 },
-//             { transform: "scale(1)", opacity: 1 },
-//           ],
-//           { duration: 260, easing: "cubic-bezier(0.22,1,0.36,1)" }
-//         );
-//       }
-
-//       if (msg.type === "lexi:close") {
-//         setSize(64, 64, "50%");
-//         iframe.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
-//       }
-
-//       if (msg.type === "lexi:size" && msg.payload) {
-//         setSize(msg.payload.w, msg.payload.h);
-//       }
-//     });
-
-//     // ✅ Optional host API
-//     window.lexi = window.lexi || {};
-//     window.lexi.open = () =>
-//       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
-//     window.lexi.close = () =>
-//       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
-//   });
-// })();
-
 (() => {
   if (window.__LEXI_WIDGET__) return;
   window.__LEXI_WIDGET__ = true;
+
+  // ⚠️ Capture the script element NOW (while this script is executing)
+  const SCRIPT_EL =
+    document.currentScript ||
+    Array.from(document.getElementsByTagName("script")).find((s) =>
+      (s.getAttribute("src") || "").includes("lexi-loader")
+    );
 
   function onReady(fn) {
     document.readyState !== "loading"
@@ -121,122 +15,186 @@
       : document.addEventListener("DOMContentLoaded", fn);
   }
 
-  function px(v, fallback) {
+  function pxNum(v, fallback = 0) {
     if (v == null || v === "") return fallback;
-    return /^[\d.]+$/.test(String(v)) ? `${v}px` : String(v);
+    const m = String(v).match(/[\d.]+/);
+    return m ? parseFloat(m[0]) : fallback;
+  }
+
+  // Tune this if you change CSS:
+  const INTERNAL_WINDOW_BOTTOM = 100; // .lexi-window { bottom: 100px }
+  const BUTTON_SIZE = 64;
+  const GAP = 16;
+
+  function appendParams(baseUrl, params) {
+    const u = new URL(baseUrl, window.location.href);
+    for (const [k, v] of Object.entries(params)) {
+      if (v != null && v !== "") u.searchParams.set(k, String(v));
+    }
+    return u.toString();
   }
 
   onReady(() => {
-    const s = document.currentScript;
-    const ds = (s && s.dataset) || {};
+    // Use the captured reference; do not call document.currentScript here.
+    const script = SCRIPT_EL;
+    if (!script) {
+      console.error("[Lexi] Could not locate loader <script> element.");
+      return;
+    }
 
-    const src =
-      ds.src ||
-      ds["src"] ||
-      ds["data-src"] ||
-      "https://cdn.yourdomain.com/widget/index.html";
+    const ds = script.dataset || {};
+    const apiUrl = ds.apiUrl || "";
+    const companyId = ds.companyId || "";
+    const theme = (ds.theme || "dark").toLowerCase();
+    const position = (ds.position || "right").toLowerCase(); // 'right'|'left'
+    const launcherBottom = ds.bottom || "20px";
+    const launcherSide = ds.side || "20px";
+    const chatWindowBottom = ds.chatWindowBottom || "100px";
+    const zIndex = ds.zIndex || "2147483000";
 
-    const url = new URL(src);
-    if (ds.apiUrl) url.searchParams.set("apiUrl", ds.apiUrl);
-    if (ds.companyId) url.searchParams.set("companyId", ds.companyId);
-    url.searchParams.set("theme", ds.theme || "dark");
-    url.searchParams.set("position", (ds.position || "right").toLowerCase());
-    url.searchParams.set("embedded", "1");
+    if (!companyId)
+      console.error("[Lexi] Missing data-company-id on <script>.");
 
+    // Robust default iframe URL = <loader dir>/index.html
+    const loaderSrc = script.getAttribute("src") || "";
+    const defaultBase = new URL("index.html", new URL(loaderSrc, location.href))
+      .href;
+
+    // Your preference: use data-src for the iframe when provided
+    const iframeBase = ds.src || defaultBase;
+
+    const iframeUrl = appendParams(iframeBase, {
+      companyId,
+      apiUrl,
+      theme,
+      position,
+    });
+
+    // --- create iframe + button (same as before) ---
     const iframe = document.createElement("iframe");
-    iframe.src = url.toString();
-    iframe.title = ds.title || "Lexi Chat";
-    iframe.setAttribute("aria-label", "Lexi Chat");
-    iframe.allow = "clipboard-read; clipboard-write; microphone *";
-    iframe.sandbox = [
-      "allow-scripts",
-      "allow-same-origin",
-      "allow-forms",
-      "allow-popups",
-      "allow-downloads",
-      "allow-modals",
-      "allow-popups-to-escape-sandbox",
-    ].join(" ");
+    iframe.src = iframeUrl;
+    iframe.allow = "clipboard-write *; autoplay *";
+    iframe.loading = "eager";
+    Object.assign(iframe.style, {
+      position: "fixed",
+      border: "0",
+      width: "0",
+      height: "0",
+      opacity: "0",
+      pointerEvents: "none",
+      zIndex: String(parseInt(zIndex, 10) - 1),
+      transition: "opacity .2s ease, transform .2s ease",
+    });
 
-    // === Launcher placement (HOST PAGE — outside iframe) ===
-    const pos = (ds.position || "right").toLowerCase(); // 'right' | 'left'
-    const z = ds.zindex || "2147483647";
+    iframe.style.bottom = chatWindowBottom;
 
-    iframe.style.position = "fixed";
-    iframe.style.border = "none";
-    iframe.style.overflow = "hidden";
-    iframe.style.background = "transparent";
-    iframe.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.25)";
-    iframe.style.transition = "all 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
-    iframe.style.willChange = "width, height, transform";
-    iframe.style.zIndex = String(z);
+    const sideProp = position === "left" ? "left" : "right";
+    iframe.style[sideProp] = launcherSide;
 
-    // Offsets: default 20px unless you override via data-bottom/data-right/data-left
-    const bottom = px(ds.bottom, "20px");
-    const right = px(ds.right, pos === "right" ? "20px" : "");
-    const left = px(ds.left, pos === "left" ? "20px" : "");
-
-    if (bottom) iframe.style.bottom = bottom;
-    if (right) iframe.style.right = right;
-    if (left) iframe.style.left = left;
-
-    // Closed (launcher) size; open size
-    const CLOSED_W = Number(ds.closedWidth || 64);
-    const CLOSED_H = Number(ds.closedHeight || 64);
-    const OPEN_W = Number(ds.width || 380);
-    const OPEN_H = Number(ds.height || 600);
-
-    const setSize = (w, h, r = "50%") => {
-      iframe.style.width = w + "px";
-      iframe.style.height = h + "px";
-      iframe.style.borderRadius = r;
-    };
-
-    // Start closed
-    setSize(CLOSED_W, CLOSED_H, "50%");
     document.body.appendChild(iframe);
 
-    // Messaging from inside iframe
-    const origin = (() => {
-      try {
-        return new URL(iframe.src).origin;
-      } catch {
-        return "*";
-      }
-    })();
+    // Launcher button
+    const btn = document.createElement("button");
+    btn.setAttribute("aria-label", "Open chat");
+    btn.textContent = "✦";
+    Object.assign(btn.style, {
+      position: "fixed",
+      width: "64px",
+      height: "64px",
+      [sideProp]: launcherSide,
+      bottom: launcherBottom,
+      borderRadius: "50%",
+      border: "none",
+      cursor: "pointer",
+      display: "grid",
+      placeItems: "center",
+      fontSize: "22px",
+      color: "#fff",
+      background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
+      boxShadow: "0 10px 28px rgba(0,0,0,.28)",
+      backdropFilter: "blur(10px)",
+      zIndex,
+      pointerEvents: "auto",
+    });
+    document.body.appendChild(btn);
 
-    window.addEventListener("message", (ev) => {
-      if (ev.source !== iframe.contentWindow) return;
-      if (origin !== "*" && ev.origin !== origin) return;
-      const msg = ev.data || {};
+    // CSP fallback: if inline styles are blocked, drop a visible plain button
+    const computed = getComputedStyle(btn);
+    if (computed.position !== "fixed") {
+      console.warn(
+        "[Lexi] Inline styles blocked by CSP. Using fallback styles."
+      );
+      btn.removeAttribute("style");
+      btn.style.position = "fixed";
+      btn.style.top = "10px";
+      btn.style.left = "10px";
+      btn.style.zIndex = zIndex;
+      btn.style.padding = "10px 14px";
+      btn.style.background = "#7b5cff";
+      btn.style.color = "#fff";
+      btn.style.border = "none";
+      btn.style.borderRadius = "10px";
+      btn.textContent = "Chat";
+    }
 
-      if (msg.type === "lexi:open") {
-        setSize(OPEN_W, OPEN_H, "16px");
-        iframe.style.boxShadow = "0 18px 48px rgba(0,0,0,0.35)";
-        iframe.animate(
-          [
-            { transform: "scale(0.85)", opacity: 0.8 },
-            { transform: "scale(1)", opacity: 1 },
-          ],
-          { duration: 260, easing: "cubic-bezier(0.22,1,0.36,1)" }
-        );
-      }
+    let isOpen = false;
+    function open() {
+      if (isOpen) return;
+      isOpen = true;
+      const w = Math.min(380, window.innerWidth);
+      const h = Math.min(600, window.innerHeight);
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
+      iframe.style.pointerEvents = "auto";
+      iframe.style.opacity = "1";
+      iframe.style.filter = "blur(0)";
+      iframe.style.transform = "translateY(0) scale(1)";
+      iframe.style.boxShadow = "0 18px 48px #00000047";
+      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
+      btn.style.transform = "scale(.9)";
+      btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
+    }
+    function close() {
+      if (!isOpen) return;
+      isOpen = false;
+      iframe.style.pointerEvents = "none";
+      iframe.style.opacity = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.filter = "blur(6px)";
+      iframe.style.transform = "translateY(16px) scale(0.96)";
+      iframe.style.boxShadow = "none";
+      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
+      btn.style.transform = "scale(1)";
+      btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
+    }
+    btn.addEventListener("click", () => (isOpen ? close() : open()));
 
-      if (msg.type === "lexi:close") {
-        setSize(CLOSED_W, CLOSED_H, "50%");
-        iframe.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
-      }
-
-      if (msg.type === "lexi:size" && msg.payload) {
-        setSize(msg.payload.w, msg.payload.h);
+    window.addEventListener("message", (e) => {
+      const t = e?.data?.type;
+      if (t === "lexi:open") open();
+      else if (t === "lexi:close") close();
+      else if (t === "lexi:resize") {
+        const { width, height } = e.data || {};
+        if (width) iframe.style.width = pxNum(width, iframe.style.width);
+        if (height) iframe.style.height = pxNum(height, iframe.style.height);
       }
     });
 
-    // Optional host API
-    window.lexi = window.lexi || {};
-    window.lexi.open = () =>
-      iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
-    window.lexi.close = () =>
-      iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
+    function handleResize() {
+      if (!isOpen) return;
+      if (matchMedia("(max-width: 600px)").matches) {
+        iframe.style.width = "100vw";
+        iframe.style.height = "100vh";
+        iframe.style[sideProp] = "0";
+        iframe.style.bottom = "0";
+      } else {
+        iframe.style[sideProp] = launcherSide;
+        iframe.style.bottom = chatWindowBottom;
+        iframe.style.width = Math.min(380, innerWidth) + "px";
+        iframe.style.height = Math.min(600, innerHeight) + "px";
+      }
+    }
+    window.addEventListener("resize", handleResize);
   });
 })();
