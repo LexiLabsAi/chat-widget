@@ -120,10 +120,17 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._signalrChatService.disconnect();
+    if (this.inIframe) {
+      window.removeEventListener('message', this.messageHandler);
+    }
   }
 
   ngOnInit(): void {
     this.setEmbeddedAttrIfIframe();
+
+    if (this.inIframe) {
+      window.addEventListener('message', this.messageHandler);
+    }
 
     // 👇 Reset typing if connection drops or reconnects
     window.addEventListener('lexi:typing-reset', () => {
@@ -263,6 +270,27 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
       setTimeout(() => this.scrollToBottom());
     });
   }
+
+  private readonly messageHandler = (event: MessageEvent) => {
+    const data = event?.data;
+    if (!data || typeof data !== 'object') return;
+
+    const type = data.type;
+    if (type === 'lexi:open') {
+      if (!this.open()) {
+        this.open.set(true);
+        this.connectIfNeeded();
+        setTimeout(() => {
+          this.scrollToBottom();
+          this.focusInput();
+        });
+      }
+    } else if (type === 'lexi:close') {
+      if (this.open()) {
+        this.open.set(false);
+      }
+    }
+  };
 
   private scrollToBottom() {
     const el = this.log?.nativeElement;
