@@ -425,7 +425,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
     console.log(this.tenantId);
     console.log(this.apiUrl);
-    if (!this.tenantId || !this.apiUrl) {
+    if (!this.tenantId /*|| !this.apiUrl*/) {
       console.log('Missing tenantId or apiUrl');
       return;
     }
