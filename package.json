@@ -4,10 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build chat-widget --configuration=production",
+    "build": "ng build chat-widget --configuration=lexi-prod",
     "watch": "ng build chat-widget --watch --configuration=development",
     "test": "ng test",
-    "build:iframe": "ng build chat-widget --configuration=production,iframe",
+    "build:iframe": "ng build chat-widget --configuration=lexi-prod,iframe",
     "serve:iframe": "ng serve --configuration=development",
     "preview": "npx http-server dist/widget -p 8080"
   },
