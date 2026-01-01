@@ -89,6 +89,9 @@
     wrap.style.bottom = chatWindowBottom;
     wrap.style[sideProp] = launcherSide;
 
+    const iframe = document.createElement("iframe");
+    iframe.src = iframeUrl;
+
     Object.assign(iframe.style, {
       position: "absolute",
       inset: "0",
@@ -170,7 +173,6 @@
 
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
 
-      btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
 
@@ -189,7 +191,6 @@
 
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
 
-      btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
     }
 
@@ -203,42 +204,77 @@
         const { width, height } = e.data || {};
         if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
         if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
+        positionFloatingUI(); // ✅ re-anchor after resize
       }
     });
 
-    function handleResize() {
-      if (!isOpen) return;
-
+    function positionFloatingUI() {
       const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      const vh = vv ? vv.height : window.innerHeight;
 
       const offsetTop = vv ? vv.offsetTop : 0;
       const offsetLeft = vv ? vv.offsetLeft : 0;
-
-      // Always above launcher
-      const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-
-      const w = Math.min(380, vw);
-      const h = Math.min(600, vh - windowBottomPx);
-
-      wrap.style.width = w + "px";
-      wrap.style.height = h + "px";
-      wrap.style[sideProp] = launcherSide;
-      wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
+      const vw = vv ? vv.width : window.innerWidth;
+      const vh = vv ? vv.height : window.innerHeight;
 
       const isMobile = matchMedia("(max-width: 600px)").matches;
 
-      wrap.style.transform = isMobile
-        ? `translate(${offsetLeft}px, ${offsetTop}px)`
-        : "translate(0px, 0px)";
+      // desired chat size (keep your dimensions)
+      const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+      const w = Math.min(380, vw);
+      const h = Math.min(600, vh - windowBottomPx);
+
+      // ---- CHAT (wrap) ----
+      wrap.style.width = w + "px";
+      wrap.style.height = h + "px";
+
+      // set side
+      wrap.style[sideProp] = launcherSide;
+      // IMPORTANT: set top explicitly (visual viewport aligned)
+      wrap.style.bottom = "auto";
+      wrap.style.top = `calc(${offsetTop + (vh - windowBottomPx - h)}px)`;
+
+      // ---- BUTTON ----
+      // Keep button anchored to bottom/right (stable),
+      // and only compensate via transform for visualViewport movement
+      btn.style.top = "auto";
+      btn.style.bottom = launcherBottom;
+
+      // Do NOT recompute left/right here — keep original fixed anchor
+      // Just compensate via transform
+      btn.style.transform = isMobile
+        ? `translate(${offsetLeft}px, ${offsetTop}px) scale(${
+            isOpen ? 0.9 : 1
+          })`
+        : `scale(${isOpen ? 0.9 : 1})`;
+
+      // Optional: if you DON'T want this on desktop, gate it:
+      if (!isMobile) {
+        // restore normal desktop fixed behavior
+        wrap.style.top = "auto";
+        wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
+
+        btn.style.top = "auto";
+        btn.style.bottom = launcherBottom;
+        btn.style.left = position === "left" ? launcherSide : "auto";
+        btn.style.right = position === "right" ? launcherSide : "auto";
+      }
+    }
+
+    function handleResize() {
+      if (!isOpen) return;
+      positionFloatingUI();
     }
 
     window.addEventListener("resize", handleResize);
 
     // ✅ ADD THESE RIGHT HERE
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("resize", () => {
+        if (isOpen) positionFloatingUI();
+      });
+      window.visualViewport.addEventListener("scroll", () => {
+        if (isOpen) positionFloatingUI();
+      });
     }
 
     window.addEventListener("orientationchange", () => {
