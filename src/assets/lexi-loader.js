@@ -70,26 +70,7 @@
       position,
     });
 
-    // --- create iframe + button (same as before) ---
-    const iframe = document.createElement("iframe");
-    iframe.src = iframeUrl;
-    iframe.allow = "clipboard-write *; autoplay *";
-    iframe.loading = "eager";
-    Object.assign(iframe.style, {
-      position: "fixed",
-      border: "0",
-      width: "0",
-      height: "0",
-      opacity: "0",
-      pointerEvents: "none",
-      zIndex: String(parseInt(zIndex, 10) - 1),
-      transition: "opacity .2s ease, transform .2s ease",
-    });
-
-    iframe.style.bottom = chatWindowBottom;
-
     const sideProp = position === "left" ? "left" : "right";
-    iframe.style[sideProp] = launcherSide;
 
     // start of wrap
     const wrap = document.createElement("div");
@@ -179,8 +160,6 @@
       // ✅ apply correct mobile/desktop positioning immediately
       handleResize();
 
-      wrap.style.width = Math.min(380, window.innerWidth) + "px";
-      wrap.style.height = Math.min(600, window.innerHeight) + "px";
       wrap.style.pointerEvents = "auto";
       wrap.style.opacity = "1";
 
@@ -222,8 +201,8 @@
       else if (t === "lexi:close") close();
       else if (t === "lexi:resize") {
         const { width, height } = e.data || {};
-        if (width) iframe.style.width = pxNum(width, iframe.style.width);
-        if (height) iframe.style.height = pxNum(height, iframe.style.height);
+        if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
+        if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
       }
     });
 
@@ -248,8 +227,11 @@
       wrap.style[sideProp] = launcherSide;
       wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
 
-      // ✅ THIS IS THE KEY: keep fixed UI aligned to the *visual* viewport
-      wrap.style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
+      const isMobile = matchMedia("(max-width: 600px)").matches;
+
+      wrap.style.transform = isMobile
+        ? `translate(${offsetLeft}px, ${offsetTop}px)`
+        : "translate(0px, 0px)";
     }
 
     window.addEventListener("resize", handleResize);
@@ -257,7 +239,12 @@
     // ✅ ADD THESE RIGHT HERE
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", handleResize);
-      window.visualViewport.addEventListener("scroll", handleResize);
     }
+
+    window.addEventListener("orientationchange", () => {
+      // allow the browser to settle its toolbar/viewport values
+      setTimeout(handleResize, 50);
+      setTimeout(handleResize, 250);
+    });
   });
 })();
