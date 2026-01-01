@@ -91,7 +91,40 @@
     const sideProp = position === "left" ? "left" : "right";
     iframe.style[sideProp] = launcherSide;
 
-    document.body.appendChild(iframe);
+    // start of wrap
+    const wrap = document.createElement("div");
+    Object.assign(wrap.style, {
+      position: "fixed",
+      border: "0",
+      width: "0",
+      height: "0",
+      opacity: "0",
+      pointerEvents: "none",
+      zIndex: String(parseInt(zIndex, 10) - 1),
+      transition: "opacity .2s ease",
+    });
+
+    // wrapper gets positioned; iframe fills it
+    wrap.style.bottom = chatWindowBottom;
+    wrap.style[sideProp] = launcherSide;
+
+    Object.assign(iframe.style, {
+      position: "absolute",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      border: "0",
+      opacity: "1",
+      pointerEvents: "auto",
+      transition: "transform .2s ease, filter .2s ease, box-shadow .2s ease",
+    });
+
+    wrap.appendChild(iframe);
+    document.body.appendChild(wrap);
+
+    // end of wrap
+
+    // document.body.appendChild(iframe);
 
     // Launcher button
     const btn = document.createElement("button");
@@ -146,12 +179,18 @@
       // ✅ apply correct mobile/desktop positioning immediately
       handleResize();
 
-      iframe.style.pointerEvents = "auto";
-      iframe.style.opacity = "1";
+      wrap.style.width = Math.min(380, window.innerWidth) + "px";
+      wrap.style.height = Math.min(600, window.innerHeight) + "px";
+      wrap.style.pointerEvents = "auto";
+      wrap.style.opacity = "1";
+
+      // animation stays on iframe so it doesn't fight offset transform
       iframe.style.filter = "blur(0)";
       iframe.style.transform = "translateY(0) scale(1)";
       iframe.style.boxShadow = "0 18px 48px #00000047";
+
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
+
       btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
@@ -159,22 +198,22 @@
     function close() {
       if (!isOpen) return;
       isOpen = false;
-      iframe.style.pointerEvents = "none";
-      iframe.style.opacity = "0";
-      iframe.style.width = "0";
-      iframe.style.height = "0";
+
+      wrap.style.pointerEvents = "none";
+      wrap.style.opacity = "0";
+      wrap.style.width = "0";
+      wrap.style.height = "0";
+
       iframe.style.filter = "blur(6px)";
       iframe.style.transform = "translateY(16px) scale(0.96)";
       iframe.style.boxShadow = "none";
 
-      // ✅ restore your configured anchor so next open starts from the right place
-      iframe.style[sideProp] = launcherSide;
-      iframe.style.bottom = chatWindowBottom;
-
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
+
       btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
     }
+
     btn.addEventListener("click", () => (isOpen ? close() : open()));
 
     window.addEventListener("message", (e) => {
@@ -188,32 +227,6 @@
       }
     });
 
-    // OLD version
-
-    // function handleResize() {
-    //   if (!isOpen) return;
-    //   if (matchMedia("(max-width: 600px)").matches) {
-    //     const vv = window.visualViewport;
-    //     const h = vv ? vv.height : window.innerHeight;
-    //     const w = vv ? vv.width : window.innerWidth;
-
-    //     iframe.style.width = w + "px";
-    //     iframe.style.height = h + "px";
-    //     iframe.style.left = "0";
-    //     iframe.style.right = "0";
-    //     iframe.style.bottom = "0";
-    //   } else {
-    //     // ✅ ALWAYS open above the launcher button
-    //     const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-
-    //     iframe.style[sideProp] = launcherSide;
-    //     iframe.style.bottom = windowBottomPx + "px";
-
-    //     iframe.style.width = Math.min(380, innerWidth) + "px";
-    //     iframe.style.height = Math.min(600, innerHeight) + "px";
-    //   }
-    // }
-
     function handleResize() {
       if (!isOpen) return;
 
@@ -221,20 +234,22 @@
       const vw = vv ? vv.width : window.innerWidth;
       const vh = vv ? vv.height : window.innerHeight;
 
-      // button bottom + size + gap => chat sits above the launcher
+      const offsetTop = vv ? vv.offsetTop : 0;
+      const offsetLeft = vv ? vv.offsetLeft : 0;
+
+      // Always above launcher
       const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
 
-      // Keep your original sizing behavior, but clamp to viewport
       const w = Math.min(380, vw);
-      const h = Math.min(600, vh - windowBottomPx); // prevent going off-screen
+      const h = Math.min(600, vh - windowBottomPx);
 
-      iframe.style.width = w + "px";
-      iframe.style.height = h + "px";
+      wrap.style.width = w + "px";
+      wrap.style.height = h + "px";
+      wrap.style[sideProp] = launcherSide;
+      wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
 
-      iframe.style[sideProp] = launcherSide;
-
-      // account for iOS safe area (home indicator)
-      iframe.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
+      // ✅ THIS IS THE KEY: keep fixed UI aligned to the *visual* viewport
+      wrap.style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
     }
 
     window.addEventListener("resize", handleResize);
