@@ -141,10 +141,14 @@
     function open() {
       if (isOpen) return;
       isOpen = true;
-      const w = Math.min(380, window.innerWidth);
-      const h = Math.min(600, window.innerHeight);
-      iframe.style.width = w + "px";
-      iframe.style.height = h + "px";
+      // const w = Math.min(380, window.innerWidth);
+      // const h = Math.min(600, window.innerHeight);
+      // iframe.style.width = w + "px";
+      // iframe.style.height = h + "px";
+
+      // ✅ apply correct mobile/desktop positioning immediately
+      handleResize();
+
       iframe.style.pointerEvents = "auto";
       iframe.style.opacity = "1";
       iframe.style.filter = "blur(0)";
@@ -164,6 +168,11 @@
       iframe.style.filter = "blur(6px)";
       iframe.style.transform = "translateY(16px) scale(0.96)";
       iframe.style.boxShadow = "none";
+
+      // ✅ restore your configured anchor so next open starts from the right place
+      iframe.style[sideProp] = launcherSide;
+      iframe.style.bottom = chatWindowBottom;
+
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
       btn.style.transform = "scale(1)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
@@ -184,17 +193,32 @@
     function handleResize() {
       if (!isOpen) return;
       if (matchMedia("(max-width: 600px)").matches) {
-        iframe.style.width = "100vw";
-        iframe.style.height = "100vh";
-        iframe.style[sideProp] = "0";
+        const vv = window.visualViewport;
+        const h = vv ? vv.height : window.innerHeight;
+        const w = vv ? vv.width : window.innerWidth;
+
+        iframe.style.width = w + "px";
+        iframe.style.height = h + "px";
+        iframe.style.left = "0";
+        iframe.style.right = "0";
         iframe.style.bottom = "0";
       } else {
+        // ✅ ALWAYS open above the launcher button
+        const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+
         iframe.style[sideProp] = launcherSide;
-        iframe.style.bottom = chatWindowBottom;
+        iframe.style.bottom = windowBottomPx + "px";
+
         iframe.style.width = Math.min(380, innerWidth) + "px";
         iframe.style.height = Math.min(600, innerHeight) + "px";
       }
     }
     window.addEventListener("resize", handleResize);
+
+    // ✅ ADD THESE RIGHT HERE
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("scroll", handleResize);
+    }
   });
 })();
