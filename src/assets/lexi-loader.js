@@ -138,13 +138,10 @@
     }
 
     let isOpen = false;
+
     function open() {
       if (isOpen) return;
       isOpen = true;
-      // const w = Math.min(380, window.innerWidth);
-      // const h = Math.min(600, window.innerHeight);
-      // iframe.style.width = w + "px";
-      // iframe.style.height = h + "px";
 
       // ✅ apply correct mobile/desktop positioning immediately
       handleResize();
@@ -158,6 +155,7 @@
       btn.style.transform = "scale(.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
+
     function close() {
       if (!isOpen) return;
       isOpen = false;
@@ -190,29 +188,55 @@
       }
     });
 
+    // OLD version
+
+    // function handleResize() {
+    //   if (!isOpen) return;
+    //   if (matchMedia("(max-width: 600px)").matches) {
+    //     const vv = window.visualViewport;
+    //     const h = vv ? vv.height : window.innerHeight;
+    //     const w = vv ? vv.width : window.innerWidth;
+
+    //     iframe.style.width = w + "px";
+    //     iframe.style.height = h + "px";
+    //     iframe.style.left = "0";
+    //     iframe.style.right = "0";
+    //     iframe.style.bottom = "0";
+    //   } else {
+    //     // ✅ ALWAYS open above the launcher button
+    //     const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+
+    //     iframe.style[sideProp] = launcherSide;
+    //     iframe.style.bottom = windowBottomPx + "px";
+
+    //     iframe.style.width = Math.min(380, innerWidth) + "px";
+    //     iframe.style.height = Math.min(600, innerHeight) + "px";
+    //   }
+    // }
+
     function handleResize() {
       if (!isOpen) return;
-      if (matchMedia("(max-width: 600px)").matches) {
-        const vv = window.visualViewport;
-        const h = vv ? vv.height : window.innerHeight;
-        const w = vv ? vv.width : window.innerWidth;
 
-        iframe.style.width = w + "px";
-        iframe.style.height = h + "px";
-        iframe.style.left = "0";
-        iframe.style.right = "0";
-        iframe.style.bottom = "0";
-      } else {
-        // ✅ ALWAYS open above the launcher button
-        const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width : window.innerWidth;
+      const vh = vv ? vv.height : window.innerHeight;
 
-        iframe.style[sideProp] = launcherSide;
-        iframe.style.bottom = windowBottomPx + "px";
+      // button bottom + size + gap => chat sits above the launcher
+      const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
 
-        iframe.style.width = Math.min(380, innerWidth) + "px";
-        iframe.style.height = Math.min(600, innerHeight) + "px";
-      }
+      // Keep your original sizing behavior, but clamp to viewport
+      const w = Math.min(380, vw);
+      const h = Math.min(600, vh - windowBottomPx); // prevent going off-screen
+
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
+
+      iframe.style[sideProp] = launcherSide;
+
+      // account for iOS safe area (home indicator)
+      iframe.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
     }
+
     window.addEventListener("resize", handleResize);
 
     // ✅ ADD THESE RIGHT HERE
