@@ -241,6 +241,52 @@ $lexi-muted: #64748b; // slate-500
 }
 
 /* ---------- Header ---------- */
+// .lexi-header {
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   padding: 4px 10px;
+//   padding-left: 1rem;
+//   color: #fff;
+//   background: rgba(255, 255, 255, 1);
+//   backdrop-filter: blur(18px);
+//   // background: rgba(255, 255, 255, 0.14);
+//   //backdrop-filter: blur(18px) saturate(160%);
+
+//   .lexi-title {
+//     display: flex;
+//     align-items: center;
+//     gap: 10px;
+//     font-weight: 700;
+//     font-size: 15px;
+//   }
+
+//   .lexi-logo {
+//     width: 115px;
+//     // height: 22px;
+//   }
+
+//   .lexi-close {
+//     background: transparent;
+//     border: none;
+//     //color: #fff;
+//     font-size: 20px;
+//     line-height: 1;
+//     cursor: pointer;
+//     padding: 6px;
+//     border-radius: 10px;
+//     transition: background 0.2s ease, transform 0.2s ease;
+
+//     &:hover {
+//       background: rgba(255, 255, 255, 0.18);
+//     }
+//     &:active {
+//       transform: scale(0.96);
+//     }
+//   }
+// }
+
+/* ---------- Header ---------- */
 .lexi-header {
   display: flex;
   align-items: center;
@@ -250,8 +296,6 @@ $lexi-muted: #64748b; // slate-500
   color: #fff;
   background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(18px);
-  // background: rgba(255, 255, 255, 0.14);
-  //backdrop-filter: blur(18px) saturate(160%);
 
   .lexi-title {
     display: flex;
@@ -263,23 +307,41 @@ $lexi-muted: #64748b; // slate-500
 
   .lexi-logo {
     width: 115px;
-    // height: 22px;
   }
 
   .lexi-close {
     background: transparent;
     border: none;
-    //color: #fff;
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    padding: 6px;
-    border-radius: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
     transition: background 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 14px;
+
+    // ✅ Collapse icon (chevron down)
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background: currentColor;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      mask-size: contain;
+      mask-repeat: no-repeat;
+      mask-position: center;
+    }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(100, 116, 139, 0.1);
     }
+
     &:active {
       transform: scale(0.96);
     }

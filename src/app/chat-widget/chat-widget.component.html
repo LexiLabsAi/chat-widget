@@ -10,11 +10,21 @@
 
 <!-- Chat Window -->
 <div class="lexi-window" [class.open]="open()">
-  <header class="lexi-header">
+  <!-- <header class="lexi-header">
     <div class="lexi-title">
       <img src="assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
     </div>
     <button class="lexi-close" (click)="toggle()" aria-label="Close">✕</button>
+  </header> -->
+
+  <header class="lexi-header">
+    <div class="lexi-title">
+      <img src="assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
+    </div>
+    <!-- ✅ Changed from ✕ to "Collapse" with icon -->
+    <button class="lexi-close" (click)="toggle()" aria-label="Collapse chat">
+      Collapse
+    </button>
   </header>
 
   <section class="lexi-body" role="log" aria-live="polite" #log>

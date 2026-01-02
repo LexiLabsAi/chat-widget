@@ -135,6 +135,53 @@
     });
     document.body.appendChild(btn);
 
+    // ✅✅✅ THE STYLE CODE GOES RIGHT HERE ✅✅✅
+    const style = document.createElement("style");
+    style.textContent = `
+      .lexi-chat-btn {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      
+      .lexi-chat-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+      }
+      
+      .lexi-chat-text {
+        max-width: 0;
+        opacity: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .lexi-chat-btn:hover .lexi-chat-text {
+        max-width: 100px;
+        opacity: 1;
+        margin-right: 4px;
+      }
+      
+      .lexi-chat-btn:hover {
+        padding-right: 20px;
+        box-shadow: 0 6px 24px rgba(123, 92, 255, 0.5);
+        transform: translateY(-2px);
+      }
+      
+      .lexi-chat-btn:active {
+        transform: translateY(0);
+      }
+      
+      .lexi-chat-btn.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.8);
+      }
+    `;
+    document.head.appendChild(style);
+    // ✅✅✅ END OF STYLE CODE ✅✅✅
+
     // CSP fallback: if inline styles are blocked, drop a visible plain button
     const computed = getComputedStyle(btn);
     if (computed.position !== "fixed") {
@@ -208,58 +255,6 @@
       }
     });
 
-    // function positionFloatingUI() {
-    //   const vv = window.visualViewport;
-
-    //   const offsetTop = vv ? vv.offsetTop : 0;
-    //   const offsetLeft = vv ? vv.offsetLeft : 0;
-    //   const vw = vv ? vv.width : window.innerWidth;
-    //   const vh = vv ? vv.height : window.innerHeight;
-
-    //   const isMobile = matchMedia("(max-width: 600px)").matches;
-
-    //   // desired chat size (keep your dimensions)
-    //   const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-    //   const w = Math.min(380, vw);
-    //   const h = Math.min(600, vh - windowBottomPx);
-
-    //   // ---- CHAT (wrap) ----
-    //   wrap.style.width = w + "px";
-    //   wrap.style.height = h + "px";
-
-    //   // set side
-    //   wrap.style[sideProp] = launcherSide;
-    //   // IMPORTANT: set top explicitly (visual viewport aligned)
-    //   wrap.style.bottom = "auto";
-    //   wrap.style.top = `calc(${offsetTop + (vh - windowBottomPx - h)}px)`;
-
-    //   // ---- BUTTON ----
-    //   // Keep button anchored to bottom/right (stable),
-    //   // and only compensate via transform for visualViewport movement
-    //   btn.style.top = "auto";
-    //   btn.style.bottom = launcherBottom;
-
-    //   // Do NOT recompute left/right here — keep original fixed anchor
-    //   // Just compensate via transform
-    //   btn.style.transform = isMobile
-    //     ? `translate(${offsetLeft}px, ${offsetTop}px) scale(${
-    //         isOpen ? 0.9 : 1
-    //       })`
-    //     : `scale(${isOpen ? 0.9 : 1})`;
-
-    //   // Optional: if you DON'T want this on desktop, gate it:
-    //   if (!isMobile) {
-    //     // restore normal desktop fixed behavior
-    //     wrap.style.top = "auto";
-    //     wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
-
-    //     btn.style.top = "auto";
-    //     btn.style.bottom = launcherBottom;
-    //     btn.style.left = position === "left" ? launcherSide : "auto";
-    //     btn.style.right = position === "right" ? launcherSide : "auto";
-    //   }
-    // }
-
     function positionFloatingUI() {
       const vv = window.visualViewport;
       const vw = vv ? vv.width : window.innerWidth;
@@ -294,13 +289,6 @@
     }
 
     window.addEventListener("resize", handleResize);
-
-    // ✅ ADD THESE RIGHT HERE
-    // if (window.visualViewport) {
-    //   window.visualViewport.addEventListener("resize", () => {
-    //     if (isOpen) positionFloatingUI();
-    //   });
-    // }
 
     window.addEventListener("orientationchange", () => {
       // allow the browser to settle its toolbar/viewport values
