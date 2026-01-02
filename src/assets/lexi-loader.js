@@ -208,11 +208,60 @@
       }
     });
 
+    // function positionFloatingUI() {
+    //   const vv = window.visualViewport;
+
+    //   const offsetTop = vv ? vv.offsetTop : 0;
+    //   const offsetLeft = vv ? vv.offsetLeft : 0;
+    //   const vw = vv ? vv.width : window.innerWidth;
+    //   const vh = vv ? vv.height : window.innerHeight;
+
+    //   const isMobile = matchMedia("(max-width: 600px)").matches;
+
+    //   // desired chat size (keep your dimensions)
+    //   const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+    //   const w = Math.min(380, vw);
+    //   const h = Math.min(600, vh - windowBottomPx);
+
+    //   // ---- CHAT (wrap) ----
+    //   wrap.style.width = w + "px";
+    //   wrap.style.height = h + "px";
+
+    //   // set side
+    //   wrap.style[sideProp] = launcherSide;
+    //   // IMPORTANT: set top explicitly (visual viewport aligned)
+    //   wrap.style.bottom = "auto";
+    //   wrap.style.top = `calc(${offsetTop + (vh - windowBottomPx - h)}px)`;
+
+    //   // ---- BUTTON ----
+    //   // Keep button anchored to bottom/right (stable),
+    //   // and only compensate via transform for visualViewport movement
+    //   btn.style.top = "auto";
+    //   btn.style.bottom = launcherBottom;
+
+    //   // Do NOT recompute left/right here — keep original fixed anchor
+    //   // Just compensate via transform
+    //   btn.style.transform = isMobile
+    //     ? `translate(${offsetLeft}px, ${offsetTop}px) scale(${
+    //         isOpen ? 0.9 : 1
+    //       })`
+    //     : `scale(${isOpen ? 0.9 : 1})`;
+
+    //   // Optional: if you DON'T want this on desktop, gate it:
+    //   if (!isMobile) {
+    //     // restore normal desktop fixed behavior
+    //     wrap.style.top = "auto";
+    //     wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
+
+    //     btn.style.top = "auto";
+    //     btn.style.bottom = launcherBottom;
+    //     btn.style.left = position === "left" ? launcherSide : "auto";
+    //     btn.style.right = position === "right" ? launcherSide : "auto";
+    //   }
+    // }
+
     function positionFloatingUI() {
       const vv = window.visualViewport;
-
-      const offsetTop = vv ? vv.offsetTop : 0;
-      const offsetLeft = vv ? vv.offsetLeft : 0;
       const vw = vv ? vv.width : window.innerWidth;
       const vh = vv ? vv.height : window.innerHeight;
 
@@ -226,38 +275,21 @@
       // ---- CHAT (wrap) ----
       wrap.style.width = w + "px";
       wrap.style.height = h + "px";
-
-      // set side
       wrap.style[sideProp] = launcherSide;
-      // IMPORTANT: set top explicitly (visual viewport aligned)
-      wrap.style.bottom = "auto";
-      wrap.style.top = `calc(${offsetTop + (vh - windowBottomPx - h)}px)`;
+
+      // ✅ FIX: Always use bottom positioning, never top
+      wrap.style.top = "auto";
+      wrap.style.bottom = `calc(${pxNum(
+        launcherBottom,
+        20
+      )}px + ${BUTTON_SIZE}px + ${GAP}px)`;
 
       // ---- BUTTON ----
-      // Keep button anchored to bottom/right (stable),
-      // and only compensate via transform for visualViewport movement
       btn.style.top = "auto";
       btn.style.bottom = launcherBottom;
 
-      // Do NOT recompute left/right here — keep original fixed anchor
-      // Just compensate via transform
-      btn.style.transform = isMobile
-        ? `translate(${offsetLeft}px, ${offsetTop}px) scale(${
-            isOpen ? 0.9 : 1
-          })`
-        : `scale(${isOpen ? 0.9 : 1})`;
-
-      // Optional: if you DON'T want this on desktop, gate it:
-      if (!isMobile) {
-        // restore normal desktop fixed behavior
-        wrap.style.top = "auto";
-        wrap.style.bottom = `calc(${windowBottomPx}px + env(safe-area-inset-bottom))`;
-
-        btn.style.top = "auto";
-        btn.style.bottom = launcherBottom;
-        btn.style.left = position === "left" ? launcherSide : "auto";
-        btn.style.right = position === "right" ? launcherSide : "auto";
-      }
+      // ✅ FIX: No transform compensation - let position: fixed work naturally
+      btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
     }
 
     function handleResize() {
