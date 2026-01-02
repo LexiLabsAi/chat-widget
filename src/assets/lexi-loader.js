@@ -277,18 +277,14 @@
       wrap.style.height = h + "px";
       wrap.style[sideProp] = launcherSide;
 
-      // ✅ FIX: Always use bottom positioning, never top
+      // ✅ CRITICAL FIX: Always use bottom positioning
+      // This stays stable regardless of Safari's address bar behavior
       wrap.style.top = "auto";
-      wrap.style.bottom = `calc(${pxNum(
-        launcherBottom,
-        20
-      )}px + ${BUTTON_SIZE}px + ${GAP}px)`;
+      wrap.style.bottom = `${windowBottomPx}px`;
 
       // ---- BUTTON ----
       btn.style.top = "auto";
       btn.style.bottom = launcherBottom;
-
-      // ✅ FIX: No transform compensation - let position: fixed work naturally
       btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
     }
 
@@ -300,11 +296,11 @@
     window.addEventListener("resize", handleResize);
 
     // ✅ ADD THESE RIGHT HERE
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", () => {
-        if (isOpen) positionFloatingUI();
-      });
-    }
+    // if (window.visualViewport) {
+    //   window.visualViewport.addEventListener("resize", () => {
+    //     if (isOpen) positionFloatingUI();
+    //   });
+    // }
 
     window.addEventListener("orientationchange", () => {
       // allow the browser to settle its toolbar/viewport values
