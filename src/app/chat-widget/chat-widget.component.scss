@@ -47,7 +47,7 @@ $lexi-muted: #64748b; // slate-500
 
 /* ---------- Chat window — smooth sheet-up animation ---------- */
 :host .lexi-window {
-  position: fixed;
+  // position: fixed;
   bottom: 100px;
   right: 20px;
   width: 380px;
@@ -65,11 +65,13 @@ $lexi-muted: #64748b; // slate-500
   background-size: 300% 300%;
   animation: lexi-gradient 16s ease infinite;
 
-  // ✅ GPU compositing to prevent scroll jank
-  will-change: transform, opacity, filter;
-  transform: translateZ(0) translateY(16px) scale(0.96);
+  /* NEW: soft elevation & motion */
+  will-change: transform, opacity, filter, box-shadow, border-radius;
+  transform-origin: bottom right;
+  transform: translateY(16px) scale(0.96);
   opacity: 0;
   filter: blur(6px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
   pointer-events: none;
 
   transition: transform 0.38s cubic-bezier(0.21, 1.02, 0.35, 1),
@@ -539,15 +541,14 @@ $lexi-muted: #64748b; // slate-500
   display: none !important;
 }
 
-/* ✅ When embedded in iframe, REMOVE fixed positioning from .lexi-window */
+/* Let the base styles control size/position/appearance.
+     Do NOT force full-bleed or transparent background. */
 :host([embedded]) .lexi-window {
-  position: static !important; // Let the outer iframe handle positioning
-  inset: auto !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  border-radius: 0 !important; // Outer wrap has border-radius
+  // position: fixed !important; /* keep standard floating behavior */
+  /* no width/height/inset overrides */
+  /* no background override */
+  /* no clip-path/opacity/filter overrides */
+  /* no z-index override */
 }
 
 /* Keep your normal paddings/margins; don't zero them out. */
