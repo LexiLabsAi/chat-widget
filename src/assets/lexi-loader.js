@@ -272,9 +272,6 @@
       window.visualViewport.addEventListener("resize", () => {
         if (isOpen) positionFloatingUI();
       });
-      window.visualViewport.addEventListener("scroll", () => {
-        if (isOpen) positionFloatingUI();
-      });
     }
 
     window.addEventListener("orientationchange", () => {
