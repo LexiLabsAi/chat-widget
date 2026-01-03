@@ -207,18 +207,37 @@
       isOpen = true;
 
       // ✅ apply correct mobile/desktop positioning immediately
-      handleResize();
+      // handleResize();
 
+      // wrap.style.pointerEvents = "auto";
+      // wrap.style.opacity = "1";
+
+      // // animation stays on iframe so it doesn't fight offset transform
+      // iframe.style.filter = "blur(0)";
+      // iframe.style.transform = "translateY(0) scale(1)";
+      // iframe.style.boxShadow = "0 18px 48px #00000047";
+
+      // iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
+
+      // btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
+
+      // ✅ SIMPLE SIZING - no viewport calculations
+      const isMobile = window.innerWidth <= 600;
+      const w = isMobile ? window.innerWidth : 380;
+      const h = isMobile ? window.innerHeight : 600;
+
+      wrap.style.width = w + "px";
+      wrap.style.height = h + "px";
       wrap.style.pointerEvents = "auto";
       wrap.style.opacity = "1";
 
-      // animation stays on iframe so it doesn't fight offset transform
       iframe.style.filter = "blur(0)";
       iframe.style.transform = "translateY(0) scale(1)";
       iframe.style.boxShadow = "0 18px 48px #00000047";
 
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
 
+      btn.style.transform = "scale(0.9)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
 
@@ -250,49 +269,57 @@
         const { width, height } = e.data || {};
         if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
         if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
-        positionFloatingUI(); // ✅ re-anchor after resize
+        //  positionFloatingUI(); // ✅ re-anchor after resize
       }
     });
 
-    function positionFloatingUI() {
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      const vh = vv ? vv.height : window.innerHeight;
+    // function positionFloatingUI() {
+    //   const vv = window.visualViewport;
+    //   const vw = vv ? vv.width : window.innerWidth;
+    //   const vh = vv ? vv.height : window.innerHeight;
 
-      const isMobile = matchMedia("(max-width: 600px)").matches;
+    //   const isMobile = matchMedia("(max-width: 600px)").matches;
 
-      // desired chat size (keep your dimensions)
-      const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-      const w = Math.min(380, vw);
-      const h = Math.min(600, vh - windowBottomPx);
+    //   // desired chat size (keep your dimensions)
+    //   const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+    //   const w = Math.min(380, vw);
+    //   const h = Math.min(600, vh - windowBottomPx);
 
-      // ---- CHAT (wrap) ----
-      wrap.style.width = w + "px";
-      wrap.style.height = h + "px";
-      wrap.style[sideProp] = launcherSide;
+    //   // ---- CHAT (wrap) ----
+    //   wrap.style.width = w + "px";
+    //   wrap.style.height = h + "px";
+    //   wrap.style[sideProp] = launcherSide;
 
-      // ✅ CRITICAL FIX: Always use bottom positioning
-      // This stays stable regardless of Safari's address bar behavior
-      wrap.style.top = "auto";
-      wrap.style.bottom = `${windowBottomPx}px`;
+    //   // ✅ CRITICAL FIX: Always use bottom positioning
+    //   // This stays stable regardless of Safari's address bar behavior
+    //   wrap.style.top = "auto";
+    //   wrap.style.bottom = `${windowBottomPx}px`;
 
-      // ---- BUTTON ----
-      btn.style.top = "auto";
-      btn.style.bottom = launcherBottom;
-      btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
-    }
+    //   // ---- BUTTON ----
+    //   btn.style.top = "auto";
+    //   btn.style.bottom = launcherBottom;
+    //   btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
+    // }
 
     function handleResize() {
       if (!isOpen) return;
-      positionFloatingUI();
+      //  positionFloatingUI();
     }
 
     window.addEventListener("resize", handleResize);
 
+    // ✅ SIMPLIFIED - only runs on orientation change
     window.addEventListener("orientationchange", () => {
-      // allow the browser to settle its toolbar/viewport values
-      setTimeout(handleResize, 50);
-      setTimeout(handleResize, 250);
+      if (!isOpen) return;
+
+      setTimeout(() => {
+        const isMobile = window.innerWidth <= 600;
+        const w = isMobile ? window.innerWidth : 380;
+        const h = isMobile ? window.innerHeight : 600;
+
+        wrap.style.width = w + "px";
+        wrap.style.height = h + "px";
+      }, 250);
     });
   });
 })();

@@ -17,17 +17,6 @@
     <button class="lexi-close" (click)="toggle()" aria-label="Close">✕</button>
   </header>
 
-  <!-- <header class="lexi-header">
-    <div class="lexi-title">
-      <img src="assets/lexi-chat.png" alt="Lexi" class="lexi-logo" />
-    </div>
-    <button
-      class="lexi-close"
-      (click)="toggle()"
-      aria-label="Collapse chat"
-    ></button>
-  </header> -->
-
   <section class="lexi-body" role="log" aria-live="polite" #log>
     <!-- CONNECTING OVERLAY -->
     <div class="lexi-connecting" *ngIf="connectionState() === 'connecting'">
