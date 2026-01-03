@@ -47,7 +47,7 @@ $lexi-muted: #64748b; // slate-500
 
 /* ---------- Chat window — smooth sheet-up animation ---------- */
 :host .lexi-window {
-  position: fixed;
+  // position: fixed;
   bottom: 100px;
   right: 20px;
   width: 380px;
