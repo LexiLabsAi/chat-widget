@@ -47,9 +47,9 @@ $lexi-muted: #64748b; // slate-500
 
 /* ---------- Chat window — smooth sheet-up animation ---------- */
 :host .lexi-window {
-  // position: fixed;
-  bottom: 100px;
-  right: 20px;
+  position: fixed;
+  // bottom: 100px;
+  // right: 20px;
   width: 380px;
   max-width: 100vw;
   height: 600px;
@@ -484,10 +484,14 @@ $lexi-muted: #64748b; // slate-500
 /* ---------- Mobile full screen ---------- */
 @media (max-width: 600px) {
   .lexi-window {
-    right: 0;
-    bottom: 0;
+    top: 0 !important; // ✅ Add this
+    right: 0 !important; // ✅ Add this
+    bottom: 0 !important; // ✅ Add this
+    left: 0 !important; // ✅ Add this
     width: 100vw !important;
     height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
     z-index: 9999;
     border-radius: 0;
   }
