@@ -76,18 +76,26 @@
     const wrap = document.createElement("div");
     Object.assign(wrap.style, {
       position: "fixed",
+      // ✅ Explicitly set all positioning properties
+      top: "auto",
       border: "0",
       width: "0",
+      bottom: chatWindowBottom,
+      [sideProp]: launcherSide,
+      [sideProp === "left" ? "right" : "left"]: "auto", // Set opposite side to auto
       height: "0",
       opacity: "0",
       pointerEvents: "none",
       zIndex: String(parseInt(zIndex, 10) - 1),
       transition: "opacity .2s ease",
+      // ✅ Force GPU compositing to prevent Safari repaints
+      transform: "translateZ(0)",
+      WebkitTransform: "translateZ(0)",
     });
 
     // wrapper gets positioned; iframe fills it
-    wrap.style.bottom = chatWindowBottom;
-    wrap.style[sideProp] = launcherSide;
+    // wrap.style.bottom = chatWindowBottom;
+    //wrap.style[sideProp] = launcherSide;
 
     const iframe = document.createElement("iframe");
     iframe.src = iframeUrl;
@@ -129,9 +137,9 @@
       backdropFilter: "blur(10px)",
       zIndex,
       pointerEvents: "auto",
+      transform: "translateZ(0)", // ✅ GPU compositing
+      WebkitTransform: "translateZ(0)",
     });
-    document.body.appendChild(btn);
-
     document.body.appendChild(btn);
 
     // ✅✅✅ THE STYLE CODE GOES RIGHT HERE ✅✅✅
@@ -206,21 +214,6 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ apply correct mobile/desktop positioning immediately
-      // handleResize();
-
-      // wrap.style.pointerEvents = "auto";
-      // wrap.style.opacity = "1";
-
-      // // animation stays on iframe so it doesn't fight offset transform
-      // iframe.style.filter = "blur(0)";
-      // iframe.style.transform = "translateY(0) scale(1)";
-      // iframe.style.boxShadow = "0 18px 48px #00000047";
-
-      // iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
-
-      // btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
-
       // ✅ SIMPLE SIZING - no viewport calculations
       const isMobile = window.innerWidth <= 600;
       const w = isMobile ? window.innerWidth : 380;
@@ -265,48 +258,7 @@
       const t = e?.data?.type;
       if (t === "lexi:open") open();
       else if (t === "lexi:close") close();
-      else if (t === "lexi:resize") {
-        const { width, height } = e.data || {};
-        if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
-        if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
-        //  positionFloatingUI(); // ✅ re-anchor after resize
-      }
     });
-
-    // function positionFloatingUI() {
-    //   const vv = window.visualViewport;
-    //   const vw = vv ? vv.width : window.innerWidth;
-    //   const vh = vv ? vv.height : window.innerHeight;
-
-    //   const isMobile = matchMedia("(max-width: 600px)").matches;
-
-    //   // desired chat size (keep your dimensions)
-    //   const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-    //   const w = Math.min(380, vw);
-    //   const h = Math.min(600, vh - windowBottomPx);
-
-    //   // ---- CHAT (wrap) ----
-    //   wrap.style.width = w + "px";
-    //   wrap.style.height = h + "px";
-    //   wrap.style[sideProp] = launcherSide;
-
-    //   // ✅ CRITICAL FIX: Always use bottom positioning
-    //   // This stays stable regardless of Safari's address bar behavior
-    //   wrap.style.top = "auto";
-    //   wrap.style.bottom = `${windowBottomPx}px`;
-
-    //   // ---- BUTTON ----
-    //   btn.style.top = "auto";
-    //   btn.style.bottom = launcherBottom;
-    //   btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
-    // }
-
-    function handleResize() {
-      if (!isOpen) return;
-      //  positionFloatingUI();
-    }
-
-    window.addEventListener("resize", handleResize);
 
     // ✅ SIMPLIFIED - only runs on orientation change
     window.addEventListener("orientationchange", () => {
