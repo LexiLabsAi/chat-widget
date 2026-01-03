@@ -105,79 +105,32 @@
 
     wrap.appendChild(iframe);
     document.body.appendChild(wrap);
-
     // end of wrap
 
-    // document.body.appendChild(iframe);
-
-    // // Launcher button
-    // const btn = document.createElement("button");
-    // btn.setAttribute("aria-label", "Open chat");
-    // btn.textContent = "✦";
-    // Object.assign(btn.style, {
-    //   position: "fixed",
-    //   width: "64px",
-    //   height: "64px",
-    //   [sideProp]: launcherSide,
-    //   bottom: launcherBottom,
-    //   borderRadius: "50%",
-    //   border: "none",
-    //   cursor: "pointer",
-    //   display: "grid",
-    //   placeItems: "center",
-    //   fontSize: "22px",
-    //   color: "#fff",
-    //   background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
-    //   boxShadow: "0 10px 28px rgba(0,0,0,.28)",
-    //   backdropFilter: "blur(10px)",
-    //   zIndex,
-    //   pointerEvents: "auto",
-    // });
-    // document.body.appendChild(btn);
-
-    // Floating button with chat bubble icon
+    // Launcher button
     const btn = document.createElement("button");
-    btn.setAttribute("aria-label", "Live chat");
-    btn.className = "lexi-chat-btn";
-
-    btn.innerHTML = `
-      <svg class="lexi-chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.38 15 3.03 16.28L2 22L7.97 20.97C9.22 21.54 10.59 21.88 12 21.88C17.52 21.88 22 17.4 22 11.88C22 6.36 17.52 2 12 2Z" fill="currentColor"/>
-        <circle cx="8" cy="12" r="1.5" fill="white"/>
-        <circle cx="12" cy="12" r="1.5" fill="white"/>
-        <circle cx="16" cy="12" r="1.5" fill="white"/>
-      </svg>
-      <span class="lexi-chat-text">Live chat</span>
-    `;
-
+    btn.setAttribute("aria-label", "Open chat");
+    btn.textContent = "✦";
     Object.assign(btn.style, {
       position: "fixed",
-      bottom: "20px",
-      right: "20px",
-      height: "56px",
-      minWidth: "56px",
-      width: "56px",
-      padding: "0",
-      borderRadius: "28px",
+      width: "64px",
+      height: "64px",
+      [sideProp]: launcherSide,
+      bottom: launcherBottom,
+      borderRadius: "50%",
       border: "none",
       cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0",
-      fontSize: "15px",
-      fontWeight: "600",
-      fontFamily:
-        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      display: "grid",
+      placeItems: "center",
+      fontSize: "22px",
       color: "#fff",
       background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
-      boxShadow: "0 4px 16px rgba(123, 92, 255, 0.4)",
+      boxShadow: "0 10px 28px rgba(0,0,0,.28)",
+      backdropFilter: "blur(10px)",
       zIndex,
-      overflow: "hidden",
-      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      WebkitTapHighlightColor: "transparent",
       pointerEvents: "auto",
     });
+    document.body.appendChild(btn);
 
     document.body.appendChild(btn);
 
