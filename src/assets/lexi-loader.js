@@ -214,13 +214,26 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ SIMPLE SIZING - no viewport calculations
       const isMobile = window.innerWidth <= 600;
-      const w = isMobile ? window.innerWidth : 380;
-      const h = isMobile ? window.innerHeight : 600;
 
-      wrap.style.width = w + "px";
-      wrap.style.height = h + "px";
+      if (isMobile) {
+        // ✅ Full screen on mobile - bypasses all viewport issues
+        wrap.style.top = "0";
+        wrap.style.bottom = "0";
+        wrap.style.left = "0";
+        wrap.style.right = "0";
+        wrap.style.width = "100%";
+        wrap.style.height = "100%";
+      } else {
+        // Desktop - keep floating behavior
+        wrap.style.top = "auto";
+        wrap.style.bottom = chatWindowBottom;
+        wrap.style[sideProp] = launcherSide;
+        wrap.style[sideProp === "left" ? "right" : "left"] = "auto";
+        wrap.style.width = "380px";
+        wrap.style.height = "600px";
+      }
+
       wrap.style.pointerEvents = "auto";
       wrap.style.opacity = "1";
 
@@ -230,7 +243,7 @@
 
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
 
-      btn.style.transform = "scale(0.9)";
+      btn.style.transform = "scale(0.9) translateZ(0)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
 
