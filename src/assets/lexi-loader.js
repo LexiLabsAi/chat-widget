@@ -214,24 +214,20 @@
       if (isOpen) return;
       isOpen = true;
 
-      const isMobile = window.innerWidth <= 600;
+      // ✅ More reliable mobile detection
+      const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
       if (isMobile) {
-        // ✅ Full screen on mobile - bypasses all viewport issues
+        wrap.style.width = "100vw";
+        wrap.style.height = "100vh";
         wrap.style.top = "0";
         wrap.style.bottom = "0";
         wrap.style.left = "0";
         wrap.style.right = "0";
-        wrap.style.width = "100%";
-        wrap.style.height = "100%";
       } else {
-        // Desktop - keep floating behavior
-        wrap.style.top = "auto";
-        wrap.style.bottom = chatWindowBottom;
-        wrap.style[sideProp] = launcherSide;
-        wrap.style[sideProp === "left" ? "right" : "left"] = "auto";
         wrap.style.width = "380px";
         wrap.style.height = "600px";
+        // Don't set top/bottom/left/right - use the initial values
       }
 
       wrap.style.pointerEvents = "auto";
