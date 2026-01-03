@@ -1,3 +1,350 @@
+// (() => {
+//   if (window.__LEXI_WIDGET__) return;
+//   window.__LEXI_WIDGET__ = true;
+
+//   // ⚠️ Capture the script element NOW (while this script is executing)
+//   const SCRIPT_EL =
+//     document.currentScript ||
+//     Array.from(document.getElementsByTagName("script")).find((s) =>
+//       (s.getAttribute("src") || "").includes("lexi-loader")
+//     );
+
+//   function onReady(fn) {
+//     document.readyState !== "loading"
+//       ? fn()
+//       : document.addEventListener("DOMContentLoaded", fn);
+//   }
+
+//   function pxNum(v, fallback = 0) {
+//     if (v == null || v === "") return fallback;
+//     const m = String(v).match(/[\d.]+/);
+//     return m ? parseFloat(m[0]) : fallback;
+//   }
+
+//   // Tune this if you change CSS:
+//   const INTERNAL_WINDOW_BOTTOM = 100; // .lexi-window { bottom: 100px }
+//   const BUTTON_SIZE = 64;
+//   const GAP = 16;
+
+//   function appendParams(baseUrl, params) {
+//     const u = new URL(baseUrl, window.location.href);
+//     for (const [k, v] of Object.entries(params)) {
+//       if (v != null && v !== "") u.searchParams.set(k, String(v));
+//     }
+//     return u.toString();
+//   }
+
+//   onReady(() => {
+//     // Use the captured reference; do not call document.currentScript here.
+//     const script = SCRIPT_EL;
+//     if (!script) {
+//       console.error("[Lexi] Could not locate loader <script> element.");
+//       return;
+//     }
+
+//     const ds = script.dataset || {};
+//     const apiUrl = ds.apiUrl || "";
+//     const companyId = ds.companyId || "";
+//     const theme = (ds.theme || "dark").toLowerCase();
+//     const position = (ds.position || "right").toLowerCase(); // 'right'|'left'
+//     const launcherBottom = ds.bottom || "20px";
+//     const launcherSide = ds.side || "20px";
+//     const chatWindowBottom = ds.chatWindowBottom || "100px";
+//     const zIndex = ds.zIndex || "2147483000";
+
+//     if (!companyId)
+//       console.error("[Lexi] Missing data-company-id on <script>.");
+
+//     // Robust default iframe URL = <loader dir>/index.html
+//     const loaderSrc = script.getAttribute("src") || "";
+//     const defaultBase = new URL("index.html", new URL(loaderSrc, location.href))
+//       .href;
+
+//     // Your preference: use data-src for the iframe when provided
+//     const iframeBase = ds.src || defaultBase;
+
+//     const iframeUrl = appendParams(iframeBase, {
+//       companyId,
+//       apiUrl,
+//       theme,
+//       position,
+//     });
+
+//     const sideProp = position === "left" ? "left" : "right";
+
+//     // start of wrap
+//     const wrap = document.createElement("div");
+//     Object.assign(wrap.style, {
+//       position: "fixed",
+//       border: "0",
+//       width: "0",
+//       height: "0",
+//       opacity: "0",
+//       pointerEvents: "none",
+//       zIndex: String(parseInt(zIndex, 10) - 1),
+//       transition: "opacity .2s ease",
+//     });
+
+//     // wrapper gets positioned; iframe fills it
+//     wrap.style.bottom = chatWindowBottom;
+//     wrap.style[sideProp] = launcherSide;
+
+//     const iframe = document.createElement("iframe");
+//     iframe.src = iframeUrl;
+
+//     Object.assign(iframe.style, {
+//       position: "absolute",
+//       inset: "0",
+//       width: "100%",
+//       height: "100%",
+//       border: "0",
+//       opacity: "1",
+//       pointerEvents: "auto",
+//       transition: "transform .2s ease, filter .2s ease, box-shadow .2s ease",
+//     });
+
+//     wrap.appendChild(iframe);
+//     document.body.appendChild(wrap);
+
+//     // end of wrap
+
+//     // document.body.appendChild(iframe);
+
+//     // // Launcher button
+//     // const btn = document.createElement("button");
+//     // btn.setAttribute("aria-label", "Open chat");
+//     // btn.textContent = "✦";
+//     // Object.assign(btn.style, {
+//     //   position: "fixed",
+//     //   width: "64px",
+//     //   height: "64px",
+//     //   [sideProp]: launcherSide,
+//     //   bottom: launcherBottom,
+//     //   borderRadius: "50%",
+//     //   border: "none",
+//     //   cursor: "pointer",
+//     //   display: "grid",
+//     //   placeItems: "center",
+//     //   fontSize: "22px",
+//     //   color: "#fff",
+//     //   background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
+//     //   boxShadow: "0 10px 28px rgba(0,0,0,.28)",
+//     //   backdropFilter: "blur(10px)",
+//     //   zIndex,
+//     //   pointerEvents: "auto",
+//     // });
+//     // document.body.appendChild(btn);
+
+//     // Floating button with chat bubble icon
+//     const btn = document.createElement("button");
+//     btn.setAttribute("aria-label", "Live chat");
+//     btn.className = "lexi-chat-btn";
+
+//     btn.innerHTML = `
+//       <svg class="lexi-chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+//         <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.38 15 3.03 16.28L2 22L7.97 20.97C9.22 21.54 10.59 21.88 12 21.88C17.52 21.88 22 17.4 22 11.88C22 6.36 17.52 2 12 2Z" fill="currentColor"/>
+//         <circle cx="8" cy="12" r="1.5" fill="white"/>
+//         <circle cx="12" cy="12" r="1.5" fill="white"/>
+//         <circle cx="16" cy="12" r="1.5" fill="white"/>
+//       </svg>
+//       <span class="lexi-chat-text">Live chat</span>
+//     `;
+
+//     Object.assign(btn.style, {
+//       position: "fixed",
+//       bottom: "20px",
+//       right: "20px",
+//       height: "56px",
+//       minWidth: "56px",
+//       width: "56px",
+//       padding: "0",
+//       borderRadius: "28px",
+//       border: "none",
+//       cursor: "pointer",
+//       display: "flex",
+//       alignItems: "center",
+//       justifyContent: "center",
+//       gap: "0",
+//       fontSize: "15px",
+//       fontWeight: "600",
+//       fontFamily:
+//         "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+//       color: "#fff",
+//       background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
+//       boxShadow: "0 4px 16px rgba(123, 92, 255, 0.4)",
+//       zIndex,
+//       overflow: "hidden",
+//       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+//       WebkitTapHighlightColor: "transparent",
+//       pointerEvents: "auto",
+//     });
+
+//     document.body.appendChild(btn);
+
+//     // ✅✅✅ THE STYLE CODE GOES RIGHT HERE ✅✅✅
+//     const style = document.createElement("style");
+//     style.textContent = `
+//       .lexi-chat-btn {
+//         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+//       }
+
+//       .lexi-chat-icon {
+//         width: 24px;
+//         height: 24px;
+//         flex-shrink: 0;
+//         transition: transform 0.3s ease;
+//       }
+
+//       .lexi-chat-text {
+//         max-width: 0;
+//         opacity: 0;
+//         white-space: nowrap;
+//         overflow: hidden;
+//         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//       }
+
+//       .lexi-chat-btn:hover .lexi-chat-text {
+//         max-width: 100px;
+//         opacity: 1;
+//         margin-right: 4px;
+//       }
+
+//       .lexi-chat-btn:hover {
+//         padding-right: 20px;
+//         box-shadow: 0 6px 24px rgba(123, 92, 255, 0.5);
+//         transform: translateY(-2px);
+//       }
+
+//       .lexi-chat-btn:active {
+//         transform: translateY(0);
+//       }
+
+//       .lexi-chat-btn.hidden {
+//         opacity: 0;
+//         pointer-events: none;
+//         transform: scale(0.8);
+//       }
+//     `;
+//     document.head.appendChild(style);
+//     // ✅✅✅ END OF STYLE CODE ✅✅✅
+
+//     // CSP fallback: if inline styles are blocked, drop a visible plain button
+//     const computed = getComputedStyle(btn);
+//     if (computed.position !== "fixed") {
+//       console.warn(
+//         "[Lexi] Inline styles blocked by CSP. Using fallback styles."
+//       );
+//       btn.removeAttribute("style");
+//       btn.style.position = "fixed";
+//       btn.style.top = "10px";
+//       btn.style.left = "10px";
+//       btn.style.zIndex = zIndex;
+//       btn.style.padding = "10px 14px";
+//       btn.style.background = "#7b5cff";
+//       btn.style.color = "#fff";
+//       btn.style.border = "none";
+//       btn.style.borderRadius = "10px";
+//       btn.textContent = "Chat";
+//     }
+
+//     let isOpen = false;
+
+//     function open() {
+//       if (isOpen) return;
+//       isOpen = true;
+
+//       // ✅ apply correct mobile/desktop positioning immediately
+//       handleResize();
+
+//       wrap.style.pointerEvents = "auto";
+//       wrap.style.opacity = "1";
+
+//       // animation stays on iframe so it doesn't fight offset transform
+//       iframe.style.filter = "blur(0)";
+//       iframe.style.transform = "translateY(0) scale(1)";
+//       iframe.style.boxShadow = "0 18px 48px #00000047";
+
+//       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
+
+//       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
+//     }
+
+//     function close() {
+//       if (!isOpen) return;
+//       isOpen = false;
+
+//       wrap.style.pointerEvents = "none";
+//       wrap.style.opacity = "0";
+//       wrap.style.width = "0";
+//       wrap.style.height = "0";
+
+//       iframe.style.filter = "blur(6px)";
+//       iframe.style.transform = "translateY(16px) scale(0.96)";
+//       iframe.style.boxShadow = "none";
+
+//       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
+
+//       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
+//     }
+
+//     btn.addEventListener("click", () => (isOpen ? close() : open()));
+
+//     window.addEventListener("message", (e) => {
+//       const t = e?.data?.type;
+//       if (t === "lexi:open") open();
+//       else if (t === "lexi:close") close();
+//       else if (t === "lexi:resize") {
+//         const { width, height } = e.data || {};
+//         if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
+//         if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
+//         positionFloatingUI(); // ✅ re-anchor after resize
+//       }
+//     });
+
+//     function positionFloatingUI() {
+//       const vv = window.visualViewport;
+//       const vw = vv ? vv.width : window.innerWidth;
+//       const vh = vv ? vv.height : window.innerHeight;
+
+//       const isMobile = matchMedia("(max-width: 600px)").matches;
+
+//       // desired chat size (keep your dimensions)
+//       const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
+//       const w = Math.min(380, vw);
+//       const h = Math.min(600, vh - windowBottomPx);
+
+//       // ---- CHAT (wrap) ----
+//       wrap.style.width = w + "px";
+//       wrap.style.height = h + "px";
+//       wrap.style[sideProp] = launcherSide;
+
+//       // ✅ CRITICAL FIX: Always use bottom positioning
+//       // This stays stable regardless of Safari's address bar behavior
+//       wrap.style.top = "auto";
+//       wrap.style.bottom = `${windowBottomPx}px`;
+
+//       // ---- BUTTON ----
+//       btn.style.top = "auto";
+//       btn.style.bottom = launcherBottom;
+//       btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
+//     }
+
+//     function handleResize() {
+//       if (!isOpen) return;
+//       positionFloatingUI();
+//     }
+
+//     window.addEventListener("resize", handleResize);
+
+//     window.addEventListener("orientationchange", () => {
+//       // allow the browser to settle its toolbar/viewport values
+//       setTimeout(handleResize, 50);
+//       setTimeout(handleResize, 250);
+//     });
+//   });
+// })();
+
+// start of new test
 (() => {
   if (window.__LEXI_WIDGET__) return;
   window.__LEXI_WIDGET__ = true;
@@ -81,8 +428,11 @@
       height: "0",
       opacity: "0",
       pointerEvents: "none",
-      zIndex: String(parseInt(zIndex, 10) - 1),
-      transition: "opacity .2s ease",
+      zIndex: String(parseInt(zIndex, 10) + 1),
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      borderRadius: "16px",
+      overflow: "hidden",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
     });
 
     // wrapper gets positioned; iframe fills it
@@ -98,9 +448,7 @@
       width: "100%",
       height: "100%",
       border: "0",
-      opacity: "1",
-      pointerEvents: "auto",
-      transition: "transform .2s ease, filter .2s ease, box-shadow .2s ease",
+      borderRadius: "inherit",
     });
 
     wrap.appendChild(iframe);
@@ -108,34 +456,78 @@
 
     // end of wrap
 
-    // document.body.appendChild(iframe);
+    // // COMMENTED OUT - OLD BUTTON STYLE (KEPT FOR SAFETY)
+    // const btn = document.createElement("button");
+    // btn.setAttribute("aria-label", "Open chat");
+    // btn.textContent = "✦";
+    // Object.assign(btn.style, {
+    //   position: "fixed",
+    //   width: "64px",
+    //   height: "64px",
+    //   [sideProp]: launcherSide,
+    //   bottom: launcherBottom,
+    //   borderRadius: "50%",
+    //   border: "none",
+    //   cursor: "pointer",
+    //   display: "grid",
+    //   placeItems: "center",
+    //   fontSize: "22px",
+    //   color: "#fff",
+    //   background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
+    //   boxShadow: "0 10px 28px rgba(0,0,0,.28)",
+    //   backdropFilter: "blur(10px)",
+    //   zIndex,
+    //   pointerEvents: "auto",
+    // });
+    // document.body.appendChild(btn);
 
-    // Launcher button
+    // ✅ NEW CHAT BUBBLE BUTTON
     const btn = document.createElement("button");
-    btn.setAttribute("aria-label", "Open chat");
-    btn.textContent = "✦";
+    btn.setAttribute("aria-label", "Open live chat");
+    btn.className = "lexi-chat-btn";
+
+    btn.innerHTML = `
+      <svg class="lexi-chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.38 15 3.03 16.28L2 22L7.97 20.97C9.22 21.54 10.59 21.88 12 21.88C17.52 21.88 22 17.4 22 11.88C22 6.36 17.52 2 12 2Z" fill="currentColor"/>
+        <circle cx="8" cy="12" r="1.5" fill="white"/>
+        <circle cx="12" cy="12" r="1.5" fill="white"/>
+        <circle cx="16" cy="12" r="1.5" fill="white"/>
+      </svg>
+      <span class="lexi-chat-text">Live chat</span>
+    `;
+
     Object.assign(btn.style, {
       position: "fixed",
-      width: "64px",
-      height: "64px",
-      [sideProp]: launcherSide,
       bottom: launcherBottom,
-      borderRadius: "50%",
+      right: launcherSide,
+      height: "56px",
+      minWidth: "56px",
+      width: "56px",
+      padding: "0",
+      borderRadius: "28px",
       border: "none",
       cursor: "pointer",
-      display: "grid",
-      placeItems: "center",
-      fontSize: "22px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0",
+      fontSize: "15px",
+      fontWeight: "600",
+      fontFamily:
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       color: "#fff",
       background: "linear-gradient(135deg, #7b5cff, #5ce1e6)",
-      boxShadow: "0 10px 28px rgba(0,0,0,.28)",
-      backdropFilter: "blur(10px)",
+      boxShadow: "0 4px 16px rgba(123, 92, 255, 0.4)",
       zIndex,
+      overflow: "hidden",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      WebkitTapHighlightColor: "transparent",
       pointerEvents: "auto",
     });
+
     document.body.appendChild(btn);
 
-    // ✅✅✅ THE STYLE CODE GOES RIGHT HERE ✅✅✅
+    // ✅ BUTTON HOVER STYLES
     const style = document.createElement("style");
     style.textContent = `
       .lexi-chat-btn {
@@ -143,8 +535,8 @@
       }
       
       .lexi-chat-icon {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         flex-shrink: 0;
         transition: transform 0.3s ease;
       }
@@ -155,18 +547,22 @@
         white-space: nowrap;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-left: 0;
+      }
+      
+      .lexi-chat-btn:hover {
+        width: auto !important;
+        padding: 0 20px 0 16px !important;
+        gap: 10px !important;
+        justify-content: flex-start !important;
+        box-shadow: 0 6px 24px rgba(123, 92, 255, 0.5);
+        transform: translateY(-2px);
       }
       
       .lexi-chat-btn:hover .lexi-chat-text {
         max-width: 100px;
         opacity: 1;
-        margin-right: 4px;
-      }
-      
-      .lexi-chat-btn:hover {
-        padding-right: 20px;
-        box-shadow: 0 6px 24px rgba(123, 92, 255, 0.5);
-        transform: translateY(-2px);
+        margin-left: 8px;
       }
       
       .lexi-chat-btn:active {
@@ -180,7 +576,6 @@
       }
     `;
     document.head.appendChild(style);
-    // ✅✅✅ END OF STYLE CODE ✅✅✅
 
     // CSP fallback: if inline styles are blocked, drop a visible plain button
     const computed = getComputedStyle(btn);
@@ -190,8 +585,8 @@
       );
       btn.removeAttribute("style");
       btn.style.position = "fixed";
-      btn.style.top = "10px";
-      btn.style.left = "10px";
+      btn.style.bottom = "20px";
+      btn.style.right = "20px";
       btn.style.zIndex = zIndex;
       btn.style.padding = "10px 14px";
       btn.style.background = "#7b5cff";
@@ -207,93 +602,89 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ apply correct mobile/desktop positioning immediately
-      handleResize();
+      // Determine size based on viewport
+      const isMobile = window.innerWidth <= 600;
+      const width = isMobile ? "100vw" : "400px";
+      const height = isMobile ? "100vh" : "600px";
+      const bottom = isMobile ? "0" : "20px";
+      const right = isMobile ? "0" : "20px";
+      const borderRadius = isMobile ? "0" : "16px";
 
-      wrap.style.pointerEvents = "auto";
+      wrap.style.width = width;
+      wrap.style.height = height;
+      wrap.style.bottom = bottom;
+      wrap.style.right = right;
+      wrap.style.borderRadius = borderRadius;
       wrap.style.opacity = "1";
+      wrap.style.pointerEvents = "auto";
 
-      // animation stays on iframe so it doesn't fight offset transform
-      iframe.style.filter = "blur(0)";
-      iframe.style.transform = "translateY(0) scale(1)";
-      iframe.style.boxShadow = "0 18px 48px #00000047";
+      // Hide button when chat opens
+      btn.classList.add("hidden");
 
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
-
-      btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
 
     function close() {
       if (!isOpen) return;
       isOpen = false;
 
-      wrap.style.pointerEvents = "none";
-      wrap.style.opacity = "0";
       wrap.style.width = "0";
       wrap.style.height = "0";
+      wrap.style.opacity = "0";
+      wrap.style.pointerEvents = "none";
 
-      iframe.style.filter = "blur(6px)";
-      iframe.style.transform = "translateY(16px) scale(0.96)";
-      iframe.style.boxShadow = "none";
+      // Show button when chat closes
+      btn.classList.remove("hidden");
 
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
-
-      btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
     }
 
-    btn.addEventListener("click", () => (isOpen ? close() : open()));
+    btn.addEventListener("click", open);
 
     window.addEventListener("message", (e) => {
       const t = e?.data?.type;
-      if (t === "lexi:open") open();
-      else if (t === "lexi:close") close();
-      else if (t === "lexi:resize") {
-        const { width, height } = e.data || {};
-        if (width) wrap.style.width = pxNum(width, wrap.style.width) + "px";
-        if (height) wrap.style.height = pxNum(height, wrap.style.height) + "px";
-        positionFloatingUI(); // ✅ re-anchor after resize
-      }
+      if (t === "lexi:close") close();
     });
 
-    function positionFloatingUI() {
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      const vh = vv ? vv.height : window.innerHeight;
+    // Handle resize for mobile/desktop transitions
+    let resizeTimeout;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (isOpen) {
+          const isMobile = window.innerWidth <= 600;
+          const width = isMobile ? "100vw" : "400px";
+          const height = isMobile ? "100vh" : "600px";
+          const bottom = isMobile ? "0" : "20px";
+          const right = isMobile ? "0" : "20px";
+          const borderRadius = isMobile ? "0" : "16px";
 
-      const isMobile = matchMedia("(max-width: 600px)").matches;
-
-      // desired chat size (keep your dimensions)
-      const windowBottomPx = pxNum(launcherBottom, 20) + BUTTON_SIZE + GAP;
-      const w = Math.min(380, vw);
-      const h = Math.min(600, vh - windowBottomPx);
-
-      // ---- CHAT (wrap) ----
-      wrap.style.width = w + "px";
-      wrap.style.height = h + "px";
-      wrap.style[sideProp] = launcherSide;
-
-      // ✅ CRITICAL FIX: Always use bottom positioning
-      // This stays stable regardless of Safari's address bar behavior
-      wrap.style.top = "auto";
-      wrap.style.bottom = `${windowBottomPx}px`;
-
-      // ---- BUTTON ----
-      btn.style.top = "auto";
-      btn.style.bottom = launcherBottom;
-      btn.style.transform = `scale(${isOpen ? 0.9 : 1})`;
-    }
-
-    function handleResize() {
-      if (!isOpen) return;
-      positionFloatingUI();
-    }
-
-    window.addEventListener("resize", handleResize);
+          wrap.style.width = width;
+          wrap.style.height = height;
+          wrap.style.bottom = bottom;
+          wrap.style.right = right;
+          wrap.style.borderRadius = borderRadius;
+        }
+      }, 100);
+    });
 
     window.addEventListener("orientationchange", () => {
-      // allow the browser to settle its toolbar/viewport values
-      setTimeout(handleResize, 50);
-      setTimeout(handleResize, 250);
+      setTimeout(() => {
+        if (isOpen) {
+          const isMobile = window.innerWidth <= 600;
+          const width = isMobile ? "100vw" : "400px";
+          const height = isMobile ? "100vh" : "600px";
+          const bottom = isMobile ? "0" : "20px";
+          const right = isMobile ? "0" : "20px";
+          const borderRadius = isMobile ? "0" : "16px";
+
+          wrap.style.width = width;
+          wrap.style.height = height;
+          wrap.style.bottom = bottom;
+          wrap.style.right = right;
+          wrap.style.borderRadius = borderRadius;
+        }
+      }, 250);
     });
   });
 })();
