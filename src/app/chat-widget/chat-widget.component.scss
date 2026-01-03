@@ -325,19 +325,6 @@ $lexi-muted: #64748b; // slate-500
     font-weight: 600;
     font-size: 14px;
 
-    // ✅ Collapse icon (chevron down)
-    &::before {
-      content: "";
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      background: currentColor;
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-      mask-size: contain;
-      mask-repeat: no-repeat;
-      mask-position: center;
-    }
-
     &:hover {
       background: rgba(100, 116, 139, 0.1);
     }
