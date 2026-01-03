@@ -486,8 +486,8 @@ $lexi-muted: #64748b; // slate-500
   .lexi-window {
     right: 0;
     bottom: 0;
-    max-width: 100vw;
-    max-height: 100vh;
+    width: 100vw !important;
+    height: 100vh !important;
     z-index: 9999;
     border-radius: 0;
   }
