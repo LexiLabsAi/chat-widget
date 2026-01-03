@@ -214,22 +214,9 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ More reliable mobile detection
-      const isMobile = window.matchMedia("(max-width: 600px)").matches;
-
-      if (isMobile) {
-        wrap.style.width = "100vw";
-        wrap.style.height = "100vh";
-        wrap.style.top = "0";
-        wrap.style.bottom = "0";
-        wrap.style.left = "0";
-        wrap.style.right = "0";
-      } else {
-        wrap.style.width = "380px";
-        wrap.style.height = "600px";
-        // Don't set top/bottom/left/right - use the initial values
-      }
-
+      // ✅ JUST SET THESE:
+      wrap.style.width = "380px";
+      wrap.style.height = "600px";
       wrap.style.pointerEvents = "auto";
       wrap.style.opacity = "1";
 
