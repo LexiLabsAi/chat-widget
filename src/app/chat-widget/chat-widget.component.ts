@@ -234,14 +234,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
         this.apiUrl = params.get('apiUrl') || '';
       }
 
-      const origin =
-        (!this.inIframe && this.tryTopLevelOrigin()) ||
-        this.tryOriginFromReferrer() ||
-        this.tryOriginFromHostSiteInput();
+      const origin = this.resolveOrigin();
 
       if (!origin) {
         console.error(
-          '❌ Missing origin. Checked window.location, document.referrer, and hostsite param.'
+          '❌ Missing origin. Checked window.location, document.referrer, and hostSite param.'
         );
         this.connectionState.set('error');
         return;
@@ -454,9 +451,10 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private tryOriginFromHostSiteInput(): string | null {
+  private tryOriginFromHostSiteParam(): string | null {
     try {
-      const v = (this.hostSite || '').trim();
+      const params = new URLSearchParams(window.location.search);
+      const v = params.get('hostSite');
       if (!v) return null;
 
       const normalized = v.includes('://') ? v : `https://${v}`;
@@ -466,13 +464,19 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private resolveOrigin(): string | null {
+    return (
+      (!this.inIframe && this.tryTopLevelOrigin()) ||
+      this.tryOriginFromReferrer() ||
+      this.tryOriginFromHostSiteParam()
+    );
+  }
+
   private async connectIfNeeded(): Promise<void> {
     if (this.isConnected || this.connecting) {
       return;
     }
 
-    console.log(this.tenantId);
-    console.log(this.apiUrl);
     if (!this.tenantId /*|| !this.apiUrl*/) {
       console.log('Missing tenantId or apiUrl');
       return;
@@ -481,14 +485,11 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
     this.connecting = true;
     console.log('Connecting to chat hub...');
 
-    const origin =
-      (!this.inIframe && this.tryTopLevelOrigin()) ||
-      this.tryOriginFromReferrer() ||
-      this.tryOriginFromHostSiteInput();
+    const origin = this.resolveOrigin();
 
     if (!origin) {
       console.error(
-        '❌ Missing origin. Checked window.location, document.referrer, and hostsite param.'
+        '❌ Missing origin. Checked window.location, document.referrer, and hostSite param.'
       );
       this.connectionState.set('error');
       return;
