@@ -40,6 +40,7 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() companyId = '';
   @Input() theme: 'dark' | 'light' = 'dark';
   @Input() position: 'right' | 'left' = 'right';
+  @Input() hostSite = '';
 
   @HostBinding('attr.data-theme') get themeAttr() {
     return this.theme;
@@ -234,9 +235,17 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const origin =
-        window.location !== window.parent.location
-          ? new URL(document.referrer).origin // inside iframe → parent origin
-          : window.location.origin;
+        (!this.inIframe && this.tryTopLevelOrigin()) ||
+        this.tryOriginFromReferrer() ||
+        this.tryOriginFromHostSiteInput();
+
+      if (!origin) {
+        console.error(
+          '❌ Missing origin. Checked window.location, document.referrer, and hostsite param.'
+        );
+        this.connectionState.set('error');
+        return;
+      }
 
       this.tenantId = this.companyId?.trim();
 
@@ -429,6 +438,34 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${day}, ${this.formatTime(this.messages()[0], first)}`;
   }
 
+  private tryTopLevelOrigin(): string | null {
+    try {
+      return window.location?.origin ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private tryOriginFromReferrer(): string | null {
+    try {
+      return document.referrer ? new URL(document.referrer).origin : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private tryOriginFromHostSiteInput(): string | null {
+    try {
+      const v = (this.hostSite || '').trim();
+      if (!v) return null;
+
+      const normalized = v.includes('://') ? v : `https://${v}`;
+      return new URL(normalized).origin;
+    } catch {
+      return null;
+    }
+  }
+
   private async connectIfNeeded(): Promise<void> {
     if (this.isConnected || this.connecting) {
       return;
@@ -445,9 +482,17 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('Connecting to chat hub...');
 
     const origin =
-      window.location !== window.parent.location
-        ? new URL(document.referrer).origin
-        : window.location.origin;
+      (!this.inIframe && this.tryTopLevelOrigin()) ||
+      this.tryOriginFromReferrer() ||
+      this.tryOriginFromHostSiteInput();
+
+    if (!origin) {
+      console.error(
+        '❌ Missing origin. Checked window.location, document.referrer, and hostsite param.'
+      );
+      this.connectionState.set('error');
+      return;
+    }
 
     this._tokenHttpService.issueToken(this.tenantId, origin).subscribe({
       next: (res) => {

@@ -45,6 +45,7 @@
     const ds = script.dataset || {};
     const apiUrl = ds.apiUrl || "";
     const companyId = ds.companyId || "";
+    const hostSite = ds.hostSite || "";
     const theme = (ds.theme || "dark").toLowerCase();
     const position = (ds.position || "right").toLowerCase(); // 'right'|'left'
     const launcherBottom = ds.bottom || "20px";
@@ -68,6 +69,7 @@
       apiUrl,
       theme,
       position,
+      hostSite,
     });
 
     const sideProp = position === "left" ? "left" : "right";
