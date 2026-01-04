@@ -223,6 +223,8 @@
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
       if (isMobile) {
+        alert(`Mobile detected! Width: ${window.innerWidth}`);
+
         // ✅ Full screen on mobile
         wrap.style.width = "100vw";
         wrap.style.height = "100vh";
@@ -232,6 +234,8 @@
         wrap.style.right = "0";
         wrap.style.borderRadius = "0";
       } else {
+        alert(`Desktop mode! Width: ${window.innerWidth}`);
+
         // ✅ Floating card on desktop
         wrap.style.width = "380px";
         wrap.style.height = "600px";
