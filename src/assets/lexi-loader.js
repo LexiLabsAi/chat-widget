@@ -83,6 +83,8 @@
       bottom: chatWindowBottom,
       [sideProp]: launcherSide,
       [sideProp === "left" ? "right" : "left"]: "auto", // Set opposite side to auto
+      border: "0",
+      width: "0",
       height: "0",
       opacity: "0",
       pointerEvents: "none",
@@ -93,9 +95,13 @@
       WebkitTransform: "translateZ(0)",
     });
 
-    // wrapper gets positioned; iframe fills it
-    // wrap.style.bottom = chatWindowBottom;
-    //wrap.style[sideProp] = launcherSide;
+    // ✅ ADD THIS IMMEDIATELY AFTER:
+    const isMobile = window.matchMedia("(max-width: 600px)").matches;
+    if (isMobile) {
+      wrap.style.borderRadius = "0";
+    } else {
+      wrap.style.borderRadius = "16px";
+    }
 
     const iframe = document.createElement("iframe");
     iframe.src = iframeUrl;
@@ -214,9 +220,28 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ JUST SET THESE:
-      wrap.style.width = "380px";
-      wrap.style.height = "600px";
+      const isMobile = window.matchMedia("(max-width: 600px)").matches;
+
+      if (isMobile) {
+        // ✅ Full screen on mobile
+        wrap.style.width = "100vw";
+        wrap.style.height = "100vh";
+        wrap.style.top = "0";
+        wrap.style.bottom = "0";
+        wrap.style.left = "0";
+        wrap.style.right = "0";
+        wrap.style.borderRadius = "0";
+      } else {
+        // ✅ Floating card on desktop
+        wrap.style.width = "380px";
+        wrap.style.height = "600px";
+        wrap.style.top = "auto";
+        wrap.style.bottom = chatWindowBottom;
+        wrap.style.left = "auto";
+        wrap.style.right = launcherSide;
+        wrap.style.borderRadius = "16px";
+      }
+
       wrap.style.pointerEvents = "auto";
       wrap.style.opacity = "1";
 
