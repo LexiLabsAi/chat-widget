@@ -44,6 +44,10 @@ export class SignalRChatService {
         `${environment.BASE_SIGNALR_URL}/widgethub?chatSettingsId=${chatSettingsId}`,
         {
           accessTokenFactory: () => token,
+          transport:
+            signalR.HttpTransportType.WebSockets |
+            signalR.HttpTransportType.ServerSentEvents |
+            signalR.HttpTransportType.LongPolling,
         }
       )
       .withAutomaticReconnect() // retry automatically

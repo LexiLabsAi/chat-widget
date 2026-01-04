@@ -220,27 +220,34 @@
       if (isOpen) return;
       isOpen = true;
 
-      // ✅ PROPER DETECTION (not forced)
       const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
       if (isMobile) {
         // Mobile: full screen
         wrap.style.width = "100vw";
-        wrap.style.height = "100vh";
+        wrap.style.height = window.innerHeight + "px"; // More accurate on iOS
         wrap.style.top = "0";
         wrap.style.bottom = "0";
         wrap.style.left = "0";
         wrap.style.right = "0";
         wrap.style.borderRadius = "0";
+
+        // ✅ HIDE BUTTON ON MOBILE
+        btn.style.opacity = "0";
+        btn.style.pointerEvents = "none";
+        btn.style.transform = "scale(0.8) translateZ(0)";
       } else {
         // Desktop: floating card
         wrap.style.width = "380px";
         wrap.style.height = "600px";
         wrap.style.top = "auto";
-        wrap.style.bottom = chatWindowBottom; // Should be "100px"
+        wrap.style.bottom = chatWindowBottom;
         wrap.style.left = "auto";
-        wrap.style.right = launcherSide; // Should be "20px"
+        wrap.style.right = launcherSide;
         wrap.style.borderRadius = "16px";
+
+        // ✅ SHRINK BUTTON ON DESKTOP
+        btn.style.transform = "scale(0.9) translateZ(0)";
       }
 
       wrap.style.pointerEvents = "auto";
@@ -252,7 +259,6 @@
 
       iframe.contentWindow?.postMessage({ type: "lexi:open" }, "*");
 
-      btn.style.transform = "scale(0.9) translateZ(0)";
       btn.style.boxShadow = "0 8px 22px rgba(0,0,0,.24)";
     }
 
@@ -271,6 +277,10 @@
 
       iframe.contentWindow?.postMessage({ type: "lexi:close" }, "*");
 
+      // ✅ SHOW BUTTON AGAIN
+      btn.style.opacity = "1";
+      btn.style.pointerEvents = "auto";
+      btn.style.transform = "translateZ(0)";
       btn.style.boxShadow = "0 10px 28px rgba(0,0,0,.28)";
     }
 

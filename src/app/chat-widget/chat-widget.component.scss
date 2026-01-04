@@ -489,9 +489,9 @@ $lexi-muted: #64748b; // slate-500
     bottom: 0 !important; // ✅ Add this
     left: 0 !important; // ✅ Add this
     width: 100vw !important;
-    height: 100vh !important;
+    height: 100dvh !important;
     max-width: 100vw !important;
-    max-height: 100vh !important;
+    max-height: 100dvh !important;
     z-index: 9999;
     border-radius: 0;
   }
