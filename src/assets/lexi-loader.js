@@ -220,12 +220,36 @@
       if (isOpen) return;
       isOpen = true;
 
-      const isMobile = window.matchMedia("(max-width: 600px)").matches;
+      // const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
-      if (isMobile) {
-        alert(`Mobile detected! Width: ${window.innerWidth}`);
+      // if (isMobile) {
+      //   alert(`Mobile detected! Width: ${window.innerWidth}`);
 
-        // ✅ Full screen on mobile
+      //   // ✅ Full screen on mobile
+      //   wrap.style.width = "100vw";
+      //   wrap.style.height = "100vh";
+      //   wrap.style.top = "0";
+      //   wrap.style.bottom = "0";
+      //   wrap.style.left = "0";
+      //   wrap.style.right = "0";
+      //   wrap.style.borderRadius = "0";
+      // } else {
+      //   alert(`Desktop mode! Width: ${window.innerWidth}`);
+
+      //   // ✅ Floating card on desktop
+      //   wrap.style.width = "380px";
+      //   wrap.style.height = "600px";
+      //   wrap.style.top = "auto";
+      //   wrap.style.bottom = chatWindowBottom;
+      //   wrap.style.left = "auto";
+      //   wrap.style.right = launcherSide;
+      //   wrap.style.borderRadius = "16px";
+      // }
+
+      // ✅ FORCE MOBILE MODE - NO DETECTION
+      const FORCE_MOBILE = true; // Just to test
+
+      if (FORCE_MOBILE) {
         wrap.style.width = "100vw";
         wrap.style.height = "100vh";
         wrap.style.top = "0";
@@ -233,17 +257,6 @@
         wrap.style.left = "0";
         wrap.style.right = "0";
         wrap.style.borderRadius = "0";
-      } else {
-        alert(`Desktop mode! Width: ${window.innerWidth}`);
-
-        // ✅ Floating card on desktop
-        wrap.style.width = "380px";
-        wrap.style.height = "600px";
-        wrap.style.top = "auto";
-        wrap.style.bottom = chatWindowBottom;
-        wrap.style.left = "auto";
-        wrap.style.right = launcherSide;
-        wrap.style.borderRadius = "16px";
       }
 
       wrap.style.pointerEvents = "auto";
