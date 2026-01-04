@@ -132,6 +132,17 @@ export class ChatWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
       window.addEventListener('message', this.messageHandler);
     }
 
+    // ✅ Handle iOS keyboard
+    if (this.inIframe && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      window.visualViewport?.addEventListener('resize', () => {
+        const vvHeight = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty(
+          '--vh',
+          `${vvHeight * 0.01}px`
+        );
+      });
+    }
+
     // 👇 Reset typing if connection drops or reconnects
     window.addEventListener('lexi:typing-reset', () => {
       console.log('🧹 Resetting typing indicator');
